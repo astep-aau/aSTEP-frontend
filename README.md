@@ -37,50 +37,30 @@ Group 11 is currently working on kubernetes setup for project
 ```mermaid
 architecture-beta
     group ks(cloud)[Kubernetes]
+    group tte(cloud)[TTE] in ks
+    group ot(cloud)[OT] in ks
     service nextjs(server)[NextJS Server] in ks
-    service group11service(server)[REST service Group 11] in ks   
-    service group2service(server)[REST service Group 2] in ks   
-    service group3service(server)[REST service Group 3] in ks   
-    service group6service(server)[REST service Group 6] in ks   
-    service group9service(server)[REST service Group 9] in ks   
-    service database(database)[Database]
-    junction junction1
-    junction junction2
-    junction junction3
-    junction junction4
-    junction junction5
-    junction junction6
+    service group11service(server)[REST service Group 11] in tte 
+    service group2service(server)[REST service Group 2] in ot   
+    service group3service(server)[REST service Group 3] in tte   
+    service group6service(server)[REST service Group 6] in tte   
+    service group9service(server)[REST service Group 9] in ot   
+    service ttedatabase(database)[TTE Database] in tte
+    service otherdatabase(database)[Other Database] in ot
 
-    junction junction8
-    junction junction9
-    junction junction10
-    junction junction11
-    junction junction12
+    group3service:L -- R:ttedatabase
+    group6service:L -- R:ttedatabase
+    group11service:L -- R:ttedatabase
 
-    group2service:T -- B:junction8
-    group3service:T -- B:junction9
-    group6service:T -- B:junction10
-    group9service:T -- B:junction11
-    group11service:T -- B:junction12
+    group3service:L -- R:nextjs
+    group6service:L -- R:nextjs
+    group11service:L -- R:nextjs
 
-    junction8:L -- R:junction9
-    junction9:L -- R:junction10
-    junction10:L -- R:junction11
-    junction11:L -- R:junction12
+    group2service:R-- L:otherdatabase
+    group9service:R -- L:otherdatabase
 
-    junction10:T -- B:nextjs
-
-    group2service:B -- T:junction5
-    group3service:B -- T:junction4
-    group6service:B -- T:junction3
-    group9service:B -- T:junction2
-    group11service:B -- T:junction1
-    database:T -- B:junction3
-
-    junction1:R -- L:junction2
-    junction2:R -- L:junction3
-    junction3:R -- L:junction4
-    junction4:R -- L:junction5
+    group2service:R-- L:nextjs
+    group9service:R -- L:nextjs
 ```
 
 

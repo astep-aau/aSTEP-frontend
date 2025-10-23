@@ -2,164 +2,150 @@
 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { MapPin } from "lucide-react"; // Import MapPin for the icon overlay
-import React, { useState } from 'react';
-import { WrittenInput } from "./writtenInput";
-import { SelectInput } from "./selectInput";
+import { MapPin, CircleQuestionMark } from "lucide-react"; 
+import { IconButton } from "./iconButton";
+import { FormEvent, useState } from 'react';
+import { EstimatedTimeState } from "./page";
+import { Input } from '@/components/ui/input';
 import { Display } from "./display";
-// import { estimateTravelTime } from "@/services/apiService"; 
-// ----------------------------------------
 
-// --- Types (Simplified Coordinate to a single string for Lon, Lat) ---
-export interface CoordinateString { coordinate: string; } // Example: "55.70, 12.57"
-export interface EstimatedTimeState {
-  hours: number | null;
-  minutes: number | null;
-  seconds: number | null;
-  error: string | null;
-  loading: boolean;
+interface InputPanelProps {
+    origin: string;
+    setOrigin: (value: string) => void;
+    destination: string;
+    setDestination: (value: string) => void;
+    timeOfTravel: string;
+    setTimeOfTravel: (value: string) => void;
+    modelVersion: string;
+    setModelVersion: (value: string) => void;
+    estimatedTime: EstimatedTimeState;
+    handleCalculate: () => Promise<void>;
+    modelVersions: string[];
+    pageName: string;
 }
 
-/**
- * Main Input Panel Component (Form)
- */
-export function InputPanel() {
-  const modelVersions = ["LSTM 1.0", "LSTM 1.1", "LSTM 2.0 (Experimental)"];
-
-  // State for all inputs (Now using single string for coordinates)
-  const [origin, setOrigin] = useState(''); // e.g., "55.70, 12.57"
-  const [destination, setDestination] = useState('');
-  const [timeOfTravel, setTimeOfTravel] = useState('');
-  const [modelVersion, setModelVersion] = useState(modelVersions[0]);
-
-  const [estimatedTime, setEstimatedTime] = useState<EstimatedTimeState>({ 
-      hours: null, minutes: null, seconds: null, error: null, loading: false 
-  });
-  
-  // Helper to safely parse coordinate string "lon, lat"
-  const parseCoordinates = (coordString: string) => {
-    const parts = coordString.split(',').map(p => p.trim());
-    const lon = parseFloat(parts[0]);
-    const lat = parseFloat(parts[1]);
-    return { lon, lat, valid: parts.length === 2 && !isNaN(lon) && !isNaN(lat) };
+// Main Input Panel Component (Form)
+export function InputPanel({ 
+    origin, setOrigin, 
+    destination, setDestination, 
+    timeOfTravel, setTimeOfTravel,
+    modelVersion, setModelVersion, 
+    estimatedTime, handleCalculate,
+    modelVersions, pageName
+}: InputPanelProps) {
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    await handleCalculate();
   };
 
-  const handleCalculate = async () => {
-    const originCoords = parseCoordinates(origin);
-    const destinationCoords = parseCoordinates(destination);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
 
-    // 1. Validation (checking single string for all required parts)
-    if (!originCoords.valid || !destinationCoords.valid || !timeOfTravel) {
-      setEstimatedTime({ ...estimatedTime, error: "Please enter valid coordinates and time.", loading: false });
-      return;
-    }
-
-    setEstimatedTime({ ...estimatedTime, loading: true, error: null });
-
-    // 2. Prepare JSON data for backend
-    const requestData = {
-      startPosition: { 
-          lon: originCoords.lon, 
-          lat: originCoords.lat
-      },
-      destination: { 
-          lon: destinationCoords.lon, 
-          lat: destinationCoords.lat
-      },
-      timeOfTravel, 
-      modelVersion,
-    };
-    
-    console.log("Sending request to backend:", requestData); // Placeholder for API call
-
-    try {
-      // 3. Send data to the backend (or simulate)
-      // const result = await estimateTravelTime(requestData); 
-
-      // Placeholder: Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500)); 
-
-      setEstimatedTime({
-        hours: 1,
-        minutes: 35,
-        seconds: 12,
-        error: null,
-        loading: false,
-      });
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : "An unknown error occurred.";
-      setEstimatedTime({ ...estimatedTime, error: errorMessage, loading: false });
-    }
+  const helpButtonPressed = () => {
+    console.log("Help button pressed");
+    setIsHelpOpen(prev => !prev);
   };
 
   return (
-    <div className="flex flex-col gap-5 p-6 rounded-lg border border-gray-200 shadow-md">
-      
+    <form onSubmit={onSubmit} className="w-full h-full flex flex-col gap-5 p-6 rounded-lg border border-gray-200 shadow-xl">
       {/* Title */}
-      <h2 className="text-xl font-bold mb-4 text-center">
-        Travel Time Estimation
-      </h2>
-      
-      {/* Origin Input (Single field) */}
-      <div className="relative">
-          <WrittenInput 
-              label="Start position" 
-              placeholder="(lon, lat)" 
-              value={origin} 
-              onChange={setOrigin} 
-              // Add padding to make space for the icon
-              className="pr-10"
-          />
-          <MapPin className="absolute right-3 top-10 -translate-y-1/2 size-4" />
+      <div className="relative mb-2">
+        <h2 className="text-xl font-bold text-center text-decoration: underline">{pageName}</h2>
+       
+      {/* Help Button */} 
+        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+          <IconButton label="Help" onClick={helpButtonPressed}>
+            <CircleQuestionMark className="h-5 w-5" />
+          </IconButton>
+        </div>
       </div>
 
-      {/* Destination Input (Single field) */}
-      <div className="relative">
-          <WrittenInput 
-              label="Destination" 
-              placeholder="(lon, lat)" 
-              value={destination} 
-              onChange={setDestination} 
-              className="pr-10"
+      {/* Origin Input */}
+      <div className="space-y-1">
+        <label htmlFor="origin" className="text-sm font-medium block">Start position (lon, lat)</label>
+        <div className="relative">
+          <Input
+            id="origin"
+            name="origin"
+            placeholder="e.g., 126.63, 45.75"
+            value={origin}
+            onChange={(e) => setOrigin(e.target.value)}
+            className="pr-12"
           />
-          <MapPin className="absolute right-3 top-10 -translate-y-1/2 size-4" />
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+            <IconButton label="Open map picker" onClick={() => {/* call function */}}>
+              <MapPin className="h-4 w-4 " />
+            </IconButton>
+          </div>
+        </div>
       </div>
 
-      {/* Time of Travel Input (Uses WrittenInput) */}
-      <WrittenInput 
-          label="Time of travel"
-          placeholder="(Time of day)" 
+      {/* Destination Input */}
+      <div className="space-y-1">
+        <label htmlFor="destination" className="text-sm font-medium block">Destination (lon, lat)</label>
+        <div className="relative">
+          <Input
+            id="destination"
+            name="destination"
+            placeholder="e.g., 126.54, 45.80"
+            value={destination}
+            onChange={(e) => setDestination(e.target.value)}
+            className="pr-12"
+          />
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+            <IconButton label="Open map picker" onClick={() => {/* call function */}}>
+              <MapPin className="h-4 w-4 " />
+            </IconButton>
+          </div>
+        </div>
+      </div>
+
+      {/* Time of Travel Input */}
+      <div className="space-y-1">
+        <label htmlFor="timeOfTravel" className="text-sm font-medium block">Time of travel</label>
+        <Input
+          id="timeOfTravel"
+          name="timeOfTravel"
+          placeholder="e.g., 14:00"
           value={timeOfTravel}
-          onChange={setTimeOfTravel}
-      />
+          onChange={(e) => setTimeOfTravel(e.target.value)}
+        />
+      </div>
 
-      {/* Model Select (Uses SelectInput) */}
-      <SelectInput 
-          label="Model version" 
-          value={modelVersion} 
-          onChange={setModelVersion}
-          versions={modelVersions}
-      />
+      {/* Model Select */}
+      <div className="space-y-1">
+        <label htmlFor="modelVersion" className="text-sm font-medium block" >Model version</label>
+        <select
+          id="modelVersion"
+          name="modelVersion"
+          value={modelVersion}
+          onChange={(e) => setModelVersion(e.target.value)}
+          className="w-full rounded-md border px-3 py-2 cursor-pointer "
+        >
+          {modelVersions.map((v) => (
+            <option key={v} value={v}>{v} </option>
+          ))}
+        </select>
+      </div>
 
       {/* Calculate Button */}
-      <Button 
-          className="mt-4 w-full" 
-          size="lg" 
-          variant="secondary" 
-          onClick={handleCalculate}
-          disabled={estimatedTime.loading}
+      <Button
+        type="submit"
+        className="mt-4 w-full font-semibold transition duration-200 shadow-lg cursor-pointer hover:shadow-xl"
+        size="lg"
+        disabled={estimatedTime.loading}
+        variant={"secondary"}
       >
         {estimatedTime.loading ? "Calculating..." : "Calculate travel time"}
       </Button>
-      
-      <Separator className="mt-4 mb-2" />
 
-      {/* Estimated Travel Time Display (Uses Display) */}
-      <Display 
-          time={estimatedTime} 
-          error={estimatedTime.error} 
-          loading={estimatedTime.loading}
+      <Separator className="mt-4 mb-2 bg-gray-200" />
+
+      {/* Estimated Travel Time Display */}
+      <Display
+        time={estimatedTime}
+        error={estimatedTime.error}
+        loading={estimatedTime.loading}
       />
-    </div>
+    </form>
   );
 }

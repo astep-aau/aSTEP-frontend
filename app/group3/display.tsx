@@ -1,32 +1,49 @@
 import React from 'react';
-import { EstimatedTimeState } from "./page"; 
+import { EstimatedTimeState } from "./page";
 
 interface DisplayProps {
     time: EstimatedTimeState;
-    error: string | null;
+    error: EstimatedTimeState['error'];
     loading: boolean;
 }
 
-// Component to display the estimated travel time.
 export function Display({ time, error, loading }: DisplayProps) {
-    const travelTimeRecieved = false; // Placeholder condition
-
-    if (travelTimeRecieved) {
+    // Helper to render all error messages
+    const renderErrors = (error: NonNullable<EstimatedTimeState['error']>) => {
         return (
-            <div className="rounded-lg border border-gray-200 p-4 w-full shadow-sm text-center">
-                {loading && <p className="text-blue-500 font-semibold">Calculating...</p>}
-                {error && <p className="text-red-500 font-semibold">Error: {error}</p>}
-                {!loading && !error && time.hours !== null ? (
-                    <h3 className="text-xl font-bold mb-1">
-                        {`${time.hours}h ${time.minutes}m ${time.seconds}s`}
-                    </h3>
-                ) : (
-                    <h3 className="text-lg font-semibold mb-1">Estimated travel time</h3>
+            <div className="space-y-1">
+                {error.origin && (
+                    <p className="text-red-600 font-semibold text-sm">{error.origin}</p>
                 )}
-                <p className="text-sm italic">Time in hours, minutes, seconds</p>
+                {error.destination && (
+                    <p className="text-red-600 font-semibold text-sm">{error.destination}</p>
+                )}
+                {error.time && (
+                    <p className="text-red-600 font-semibold text-sm">{error.time}</p>
+                )}
+                {error.general && (
+                    <p className="text-red-600 font-semibold text-sm">{error.general}</p>
+                )}
             </div>
         );
-    }
+    };
 
-    return <div className="rounded-lg p-4 w-full" />;
+    return (
+        <div className="p-6 w-full text-center">
+            {error ? (
+                renderErrors(error)
+            ) : loading ? (
+                <p className="text-blue-600 font-semibold">Calculating...</p>
+            ) : time.hours !== null ? (
+                <>
+                    <h3 className="text-xl font-bold mb-1">
+                        {`${time.hours}h ${time.minutes ?? 0}m ${time.seconds ?? 0}s`}
+                    </h3>
+                    <p className="text-sm italic">Time in hours, minutes, seconds</p>
+                </>
+            ) : (
+                <p className="text-sm text-gray-500">Enter route details and click Calculate</p>
+            )}
+        </div>
+    );
 }

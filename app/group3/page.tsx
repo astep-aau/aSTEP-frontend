@@ -9,12 +9,18 @@ export interface EstimatedTimeState {
     hours: number | null;
     minutes: number | null;
     seconds: number | null;
-    error: string | null;
+    error: ValidationError | null;
     loading: boolean;
+}
+interface ValidationError {
+    origin?: string;
+    destination?: string;
+    time?: string;
+    general?: string;
 }
 
 export default function Group3Page() {
-    // Skal hentes fra database
+    // TODO: Skal hentes fra database
     const modelVersions = ["LSTM 1.0", "LSTM 1.1", "LSTM 2.0 (Experimental)"]; 
     const [help, setHelp] = useState(false);
 
@@ -25,9 +31,10 @@ export default function Group3Page() {
     const [timeOfTravel, setTimeOfTravel] = useState('');
     const [modelVersion, setModelVersion] = useState(modelVersions[0]);
 
+    // TODO: Replace values with variables from backend
     // Application Output State (Used by InputPanel (Display) and VisualPanel (Route))
     const [estimatedTime, setEstimatedTime] = useState<EstimatedTimeState>({ 
-        hours: null, minutes: null, seconds: null, error: null, loading: false 
+        hours: 1, minutes: 1, seconds: 1, error: null, loading: false 
     });
 
     // We'll store the validated coordinates and route here once calculated
@@ -44,15 +51,32 @@ export default function Group3Page() {
     };
 
     const handleCalculate = async () => {
+        const errors: ValidationError = {};
+        
+        // Validate origin
         const originCoords = parseCoordinates(origin);
-        const destinationCoords = parseCoordinates(destination);
-    
-        // 1. Validation 
-        if (!originCoords.valid || !destinationCoords.valid || !timeOfTravel) {
-          setEstimatedTime({ ...estimatedTime, error: "Please enter valid coordinates and time.", loading: false });
-          return;
+        if (!originCoords.valid) {
+            errors.origin = "Invalid start position format. Use: longitude, latitude";
         }
-    
+        
+        // Validate destination
+        const destinationCoords = parseCoordinates(destination);
+        if (!destinationCoords.valid) {
+            errors.destination = "Invalid destination format. Use: longitude, latitude";
+        }
+        
+        // Validate time format (HH:mm)
+        if (!timeOfTravel.match(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)) {
+            errors.time = "Invalid time format. Use 24-hour format (e.g., 14:00)";
+        }
+        
+        // If any validation errors exist, update state and return
+        if (Object.keys(errors).length > 0) {
+            setEstimatedTime({ ...estimatedTime, error: errors, loading: false });
+            return;
+        }
+
+        // Proceed with calculation if validation passes
         setEstimatedTime({ ...estimatedTime, loading: true, error: null });
         setParsedOrigin({ lon: originCoords.lon, lat: originCoords.lat });
         setParsedDestination({ lon: destinationCoords.lon, lat: destinationCoords.lat });
@@ -87,9 +111,13 @@ export default function Group3Page() {
           ]);
 
         } catch (e) {
-          const errorMessage = e instanceof Error ? e.message : "An unknown error occurred.";
-          setEstimatedTime({ ...estimatedTime, error: errorMessage, loading: false });
-          setRouteData(null);
+            const errorMessage = e instanceof Error ? e.message : "An unknown error occurred";
+            setEstimatedTime({ 
+            ...estimatedTime, 
+            error: { general: errorMessage }, 
+            loading: false 
+            });
+            setRouteData(null);
         }
     };
 
@@ -98,7 +126,7 @@ export default function Group3Page() {
             <main className="flex flex-col gap-8 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8 pb-4 sm:pb-6 lg:pb-8"> 
                 
                 {/* Main Content Layout: Form (Left) and Map (Right) */}
-                    <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_2fr] gap-10 w-full h-full items-stretch">
+                    <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_2fr] gap-10 w-full h-full items-stretch min-h-[700px] max-h-[900px] ">
                     
                     {/* Input Panel */}
                     <InputPanel 
@@ -113,6 +141,8 @@ export default function Group3Page() {
                         estimatedTime={estimatedTime}
                         handleCalculate={handleCalculate}
                         modelVersions={modelVersions}
+                        help={help}
+                        setHelp={setHelp}
                         pageName="Travel Time Estimation"
                     />
                     

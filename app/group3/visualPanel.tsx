@@ -24,7 +24,7 @@ const MockMap = ({ origin, destination, routeData }: {
     // A simple visual representation of the map area
 
     return (
-        <div className={`w-full h-full min-h-[600px] bg-gray-100 rounded-lg border-2 border-dashed ${lineColor} flex flex-col items-center justify-center p-4 transition duration-500`}>
+        <div className={`w-full h-full min-h-[400px] bg-gray-100 rounded-lg border-2 border-dashed ${lineColor} flex flex-col items-center justify-center p-4 transition duration-500`}>
             {routeData && (
                 <div className="text-sm text-gray-700 font-mono mb-4 text-center">
                     Route Points: {routeData.length}
@@ -35,18 +35,6 @@ const MockMap = ({ origin, destination, routeData }: {
         </div>
     );
 }
-
-const Help = () => {
-     return (
-            <div className="text-sm">
-                <ul className="space-y-2">
-                    <li><strong>Start position</strong>: Enter lon, lat (e.g., 126.63, 45.75)</li>
-                    <li><strong>Destination</strong>: Same format as start.</li>
-                    <li><strong>Time</strong>: 24-hour format, e.g., 14:00.</li>
-                    <li><strong>Model</strong>: Choose between available model versions.</li>
-                </ul>
-            </div>
-    )}
 
 // Component Props 
 interface VisualPanelProps {
@@ -64,11 +52,20 @@ export function VisualPanel({ origin, destination, routeData, loading, helpOpen 
 
     if (helpOpen) {
         return (
-              Help
+            <div className="flex flex-col gap-5 p-6 rounded-lg border shadow-lg w-full h-full overflow-y-auto max-h-[700px]">
+                <div className="text-sm">
+                    <ul className="space-y-2">
+                        <li><strong>Start position</strong>: Enter lon, lat (e.g., 126.63, 45.75)</li>
+                        <li><strong>Destination</strong>: Same format as start.</li>
+                        <li><strong>Time</strong>: 24-hour format, e.g., 14:00.</li>
+                        <li><strong>Model</strong>: Choose between available model versions.</li>
+                    </ul>
+                </div>
+            </div>  
     )}
     
     return (
-        <div className="flex flex-col gap-5 p-6 rounded-lg border border-gray-200 shadow-xl w-full h-full">
+        <div className="flex flex-col gap-5 p-6 rounded-lg border shadow-lg w-full h-full overflow-y-auto">
       
       {/* Location Header (City Title) */}
       <h2 className="text-xl font-bold mb-2 text-center text-decoration: underline">

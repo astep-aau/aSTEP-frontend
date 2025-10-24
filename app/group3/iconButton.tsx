@@ -3,7 +3,7 @@
 import type { ReactNode, MouseEvent } from 'react';
 
 interface IconButtonProps {
-  label: string; // accessible label
+  label: string;
   children: ReactNode;
   className?: string;
   onClick?: (e: MouseEvent<HTMLButtonElement>) => void;

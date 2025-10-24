@@ -1,5 +1,6 @@
 import React from 'react';
 import { EstimatedTimeState } from "./page";
+import { Loader2 } from "lucide-react";
 
 interface DisplayProps {
     time: EstimatedTimeState;
@@ -33,7 +34,10 @@ export function Display({ time, error, loading }: DisplayProps) {
             {error ? (
                 renderErrors(error)
             ) : loading ? (
-                <p className="text-blue-600 font-semibold">Calculating...</p>
+                <div className="flex items-center justify-center rounded-lg z-10">
+                <Loader2 className="h-6 w-6 animate-spin " />
+                <span className="ml-3 text-lg font-medium ">Calculating...</span>
+            </div>
             ) : time.hours !== null ? (
                 <>
                     <h3 className="text-xl font-bold mb-1">

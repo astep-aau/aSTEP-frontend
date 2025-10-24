@@ -16,7 +16,7 @@ const MockMap = ({ origin, destination, routeData }: {
     let lineColor = routeData ? "border-green-500" : "border-gray-300";
 
     if (origin && destination && routeData) {
-        statusMessage = `Route calculated from (${origin.lon.toFixed(2)}, ${origin.lat.toFixed(2)}) to (${destination.lon.toFixed(2)}, ${destination.lat.toFixed(2)}).`;
+        statusMessage = `Route calculated from (${origin.lon}, ${origin.lat}) to (${destination.lon}, ${destination.lat}).`;
     } else if (origin && destination) {
         statusMessage = "Coordinates entered. Waiting for calculation...";
     }

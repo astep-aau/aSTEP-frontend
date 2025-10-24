@@ -23,11 +23,8 @@ interface InputPanelProps {
     estimatedTime: EstimatedTimeState;
     handleCalculate: () => Promise<void>;
     modelVersions: string[];
-
-    // Parent-controlled help state (toggled from this panel)
     help: boolean;
     setHelp: (value: boolean) => void;
-
     pageName: string;
 }
 
@@ -40,6 +37,7 @@ export function InputPanel({
     estimatedTime, handleCalculate,
     modelVersions, pageName, help, setHelp
 }: InputPanelProps) {
+  
   // sanitize spaces helper: remove all whitespace characters
   const removeSpaces = (s: string) => s.replace(/\s+/g, "");
 
@@ -75,7 +73,7 @@ export function InputPanel({
     // Allow non-printable keys (Arrow keys, Backspace, Delete, Home, End, Tab, Enter, F-keys, etc.)
     if (!isPrintableKey(e.key)) return;
     // For printable single-character keys, allow only digits, comma, dot or space
-    if (!/^[0-9., ]$/.test(e.key)) e.preventDefault();
+    if (!/^[0-9.,: ]$/.test(e.key)) e.preventDefault();
   };
 
   // Make a paste-handler tied to the specific setter to sanitize pasted text
@@ -124,7 +122,7 @@ export function InputPanel({
                 "pr-12",
                 estimatedTime.error?.origin && "border-red-500 focus-visible:ring-red-500"
             )}
-            pattern="\d*"
+            pattern="^[0-9.,: ]*$"
             onKeyDown={numericKeyDown}
             inputMode="decimal"
             onPaste={makePasteHandler(setOrigin)}
@@ -151,7 +149,7 @@ export function InputPanel({
                 "pr-12",
                 estimatedTime.error?.destination && "border-red-500 focus-visible:ring-red-500"
             )}
-            pattern="\d*"
+            pattern="^[0-9.,: ]*$"
             onKeyDown={numericKeyDown}
             inputMode="decimal"
             onPaste={makePasteHandler(setDestination)}
@@ -176,7 +174,7 @@ export function InputPanel({
           className={cn(
               estimatedTime.error?.time && "border-red-500 focus-visible:ring-red-500"
           )}
-          pattern="\d*"
+          pattern="^[0-9.,: ]*$"
           onKeyDown={numericKeyDown}
           inputMode="decimal"
           onPaste={makePasteHandler(setTimeOfTravel)}

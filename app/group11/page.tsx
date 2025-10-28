@@ -1,5 +1,7 @@
 import { Map } from "@/components/map";
 
+export const dynamic = 'force-dynamic';
+
 export default function Group11Page() {
   const markers = [
     {

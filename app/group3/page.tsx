@@ -4,7 +4,8 @@ import { InputPanel } from "./inputPanel";
 import { VisualPanel } from "./visualPanel";
 import React, { useState } from "react"; 
 
-// Måske bruges
+// Måske bruges, nok sættes i ny fil ifølge robotten
+
 export interface ParsedCoordinate { lon: string; lat: string; }
 export interface EstimatedTimeState {
     hours: number | null;
@@ -43,9 +44,9 @@ export default function Group3Page() {
     const [parsedDestination, setParsedDestination] = useState<ParsedCoordinate | null>(null);
     const [routeData, setRouteData] = useState<any>(null); // State for the route geometry/points
     
-    const sendDataToBackend = async (backendUrl: string, dataToSend: any ) => {
-       // Replace with your actual backend endpoint URL
-       try{
+    // Function to send data to backend API
+    const sendDataToBackend = async (backendUrl: string, dataToSend: any ): Promise<void> => {
+      try{
           const response = await fetch(backendUrl, {
             method: 'POST',
             headers: {
@@ -54,39 +55,65 @@ export default function Group3Page() {
             body: JSON.stringify(dataToSend),
           });
 
+          // Handle non-OK responses
           if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            setEstimatedTime(prev => ({ ...prev, loading: false, error: { general: "Error occurred while fetching data." } }));
+            throw new Error(`HTTP error! status: ${response.status}`);            
           }
 
-          // Here the frontend would process the response, but its not implemented in this example. As the backend is not ready
-          // Therefore it is just logged to the console if the response was ok or not.
+          // Handle ok responses
           if (response.ok) {
             console.log("Backend response received successfully.");
-            estimatedTime.loading = true;
-          } else if (!response.ok) {
-            console.log("Error response from backend:", response.statusText);
           }
         } catch (error) {
           console.error("Error during API call:", error);
+          setEstimatedTime(prev => ({ ...prev, loading: false, error: { general: "unknown error occurred" } }));
         }
     };
 
+    // Main calculation handler triggered onSubmit from InputPanel
     const handleCalculate = async () => {
         const errors: ValidationError = {};
-        
-        // If any validation errors exist, update state and return
+
+        // validate that fields are not empty:
+        if (!origin || origin.trim() === '') {
+            errors.origin = 'Start position is required';
+        }
+        if (!destination || destination.trim() === '') {
+            errors.destination = 'Destination is required';
+        }
+        if (!timeOfTravel || timeOfTravel.trim() === '') {
+            errors.time = 'Time of travel is required';
+        }
+
+        // Check coordinates format
+        const coordPattern = /^-?\d+\.?\d*,-?\d+\.?\d*$/; // e.g., 126.63, 45.75
+        if (origin && !coordPattern.test(origin)) {
+            errors.origin = 'Invalid format. Use: longitude, latitude (e.g., 126.63, 45.75)';
+        }
+        if (destination && !coordPattern.test(destination)) {
+            errors.destination = 'Invalid format. Use: longitude, latitude (e.g., 126.54, 45.80)';
+        }
+
+        // Check time format
+        const timePattern = /^([01]?\d|2[0-3]):([0-5]\d)$/; // 24-hour format HH:MM
+        if (timeOfTravel && !timePattern.test(timeOfTravel)) {
+            errors.time = 'Invalid time format. Use 24-hour format HH:MM (e.g., 14:00)';
+        }
+
+        // If there are validation errors, update state and exit
         if (Object.keys(errors).length > 0) {
-            setEstimatedTime({ ...estimatedTime, error: errors, loading: false });
+            setEstimatedTime(prev => ({ ...prev, error: errors, loading: false }));
             return;
         }
 
-        // Proceed with calculation if validation passes
-        setEstimatedTime({ ...estimatedTime, loading: true, error: null });
-
-        // 2. Prepare JSON data for backend, matching the C# CreateProcessRequest
+        // Proceed with calculation if validation passes - Loading state
+        setEstimatedTime(prev => ({ ...prev, loading: true, error: null }));
+        
+        // Prepare JSON data for backend, matching the C# CreateProcessRequest
         const requestData = {
-          Origin: origin, // Send the original string "lon, lat"
-          Destination: destination, // Send the original string "lon, lat"
+          Origin: origin, 
+          Destination: destination,
           TimeOfTravel: timeOfTravel, 
           // modelVersion is not in the C# class, so we don't send it.
         };
@@ -94,10 +121,10 @@ export default function Group3Page() {
         
         console.log("Sending request to backend:", requestData);
 
-        sendDataToBackend(backendUrl, requestData);
+        // Send data to backend - function handles errors and updates state
+        await sendDataToBackend(backendUrl, requestData);
       };
      
-
     return (
         <div className="font-sans">
             <main className="flex flex-col gap-8 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8 pb-4 sm:pb-6 lg:pb-8"> 
@@ -131,7 +158,7 @@ export default function Group3Page() {
                         loading={estimatedTime.loading}
                         helpOpen={help}
                     />
-                    
+                
                 </div>
             </main>
         </div>

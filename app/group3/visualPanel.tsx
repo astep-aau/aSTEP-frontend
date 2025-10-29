@@ -22,9 +22,8 @@ const MockMap = ({ origin, destination, routeData }: {
     }
 
     // A simple visual representation of the map area
-
     return (
-        <div className={`w-full h-full min-h-[400px] bg-gray-100 rounded-lg border-2 border-dashed ${lineColor} flex flex-col items-center justify-center p-4 transition duration-500`}>
+        <div className={`w-full h-full min-h-[600px] bg-gray-100 rounded-lg border-2 border-dashed ${lineColor} flex flex-col items-center justify-center p-4 transition duration-500`}>
             {routeData && (
                 <div className="text-sm text-gray-700 font-mono mb-4 text-center">
                     Route Points: {routeData.length}
@@ -42,35 +41,53 @@ interface VisualPanelProps {
     destination: ParsedCoordinate | null;
     routeData: any; // Route geometry/points
     loading: boolean;
-    helpOpen: boolean;}
+    helpOpen?: boolean;
+    onCloseHelp?: () => void;
+}
 
 // Main Visual Panel Component 
 
-export function VisualPanel({ origin, destination, routeData, loading, helpOpen }: VisualPanelProps) {
-    // mulighed for at adde andet
+export function VisualPanel({ origin, destination, routeData, loading, helpOpen, onCloseHelp }: VisualPanelProps) {
     const cityName = "Harbin, China";
 
-    if (helpOpen) {
-        return (
-            <div className="flex flex-col gap-5 p-6 rounded-lg border shadow-lg w-full h-full overflow-y-auto max-h-[700px]">
-                <div className="text-sm">
-                    <ul className="space-y-2">
-                        <li><strong>Start position</strong>: Enter lon, lat (e.g., 126.63, 45.75)</li>
-                        <li><strong>Destination</strong>: Same format as start.</li>
-                        <li><strong>Time</strong>: 24-hour format, e.g., 14:00.</li>
-                        <li><strong>Model</strong>: Choose between available model versions.</li>
-                    </ul>
-                </div>
-            </div>  
-    )}
-    
     return (
-        <div className="flex flex-col gap-5 p-6 rounded-lg border shadow-lg w-full h-full overflow-y-auto">
+        <div className="flex flex-col gap-5 p-6 rounded-lg border border-gray-200 shadow-xl w-full h-full">
       
       {/* Location Header (City Title) */}
-      <h2 className="text-xl font-bold mb-2 text-center text-decoration: underline">
+      <h2 className="text-xl font-bold mb-2 text-center">
         {cityName}
       </h2>
+
+            {/* Help modal overlay on top of VisualPanel */}
+            {helpOpen && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center">
+                    {/* Backdrop */}
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onCloseHelp} />
+
+                    {/* Modal Card */}
+                    <div className="relative z-60 bg-white rounded-lg shadow-lg max-w-xl w-[90%] p-6">
+                        <div className="flex justify-between items-start">
+                            <h3 className="text-lg font-semibold mb-2">Help</h3>
+                            <button
+                                aria-label="Close help"
+                                onClick={onCloseHelp}
+                                className="ml-4 rounded-md p-1 text-gray-600 hover:bg-gray-100"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <div className="text-sm">
+                            <ul className="space-y-2">
+                                <li><strong>Start position</strong>: Enter lon, lat (e.g., 126.63, 45.75)</li>
+                                <li><strong>Destination</strong>: Same format as start.</li>
+                                <li><strong>Time</strong>: 24-hour format, e.g., 14:00.</li>
+                                <li><strong>Model</strong>: Choose between available model versions.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            )}
       
       {/* Map Content Area */}
             <div className="w-full h-full relative">

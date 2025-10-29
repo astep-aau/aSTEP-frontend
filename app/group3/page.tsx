@@ -43,10 +43,37 @@ export default function Group3Page() {
     const [parsedDestination, setParsedDestination] = useState<ParsedCoordinate | null>(null);
     const [routeData, setRouteData] = useState<any>(null); // State for the route geometry/points
     
+    const sendDataToBackend = async (backendUrl: string, dataToSend: any ) => {
+       // Replace with your actual backend endpoint URL
+       try{
+          const response = await fetch(backendUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(dataToSend),
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          // Here the frontend would process the response, but its not implemented in this example. As the backend is not ready
+          // Therefore it is just logged to the console if the response was ok or not.
+          if (response.ok) {
+            console.log("Backend response received successfully.");
+            estimatedTime.loading = true;
+          } else if (!response.ok) {
+            console.log("Error response from backend:", response.statusText);
+          }
+        } catch (error) {
+          console.error("Error during API call:", error);
+        }
+    };
+
     const handleCalculate = async () => {
         const errors: ValidationError = {};
         
-
         // If any validation errors exist, update state and return
         if (Object.keys(errors).length > 0) {
             setEstimatedTime({ ...estimatedTime, error: errors, loading: false });
@@ -63,37 +90,13 @@ export default function Group3Page() {
           TimeOfTravel: timeOfTravel, 
           // modelVersion is not in the C# class, so we don't send it.
         };
+        const backendUrl = "http://localhost:5000/api/processes";
         
         console.log("Sending request to backend:", requestData);
-    
-        try {
-          // Replace with your actual backend endpoint URL
-          const backendUrl = "http://localhost:5000/api/processes";
 
-          const response = await fetch(backendUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(requestData),
-          });
-
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-
-          // Here the frontend would process the response, but its not implemented in this example. As the backend is not ready
-          // Therefore it is just logged to the console if the response was ok or not.
-          if (response.ok) {
-            console.log("Backend response received successfully.");
-            estimatedTime.loading = true;
-          } else if (!response.ok) {
-            console.log("Error response from backend:", response.statusText);
-          }
-        
-        } catch (e) {
-            console.error("Error during API call:", e);
-        }};
+        sendDataToBackend(backendUrl, requestData);
+      };
+     
 
     return (
         <div className="font-sans">

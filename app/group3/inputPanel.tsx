@@ -35,7 +35,9 @@ export function InputPanel({
     timeOfTravel, setTimeOfTravel,
     modelVersion, setModelVersion,
     estimatedTime, handleCalculate,
-    modelVersions, pageName, help, setHelp
+    modelVersions, 
+    pageName, 
+    help, setHelp
 }: InputPanelProps) {
   
   // sanitize spaces helper: remove all whitespace characters

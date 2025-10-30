@@ -38,12 +38,12 @@ export function Display({ time, error, loading }: DisplayProps) {
                 <Loader2 className="h-6 w-6 animate-spin " />
                 <span className="ml-3 text-lg font-medium ">Calculating...</span>
             </div>
-            ) : time.hours !== null ? (
+            ) : time.minutes !== null ? (
                 <>
                     <h3 className="text-xl font-bold mb-1">
-                        {`${time.hours}h ${time.minutes ?? 0}m ${time.seconds ?? 0}s`}
+                        {`${time.hours}h ${time.minutes ?? 0}m`}
                     </h3>
-                    <p className="text-sm italic">Time in hours, minutes, seconds</p>
+                    <p className="text-sm italic">Time in hours, minutes</p>
                 </>
             ) : (
                 <p className="text-sm text-gray-500">Enter route details and click Calculate</p>

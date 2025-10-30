@@ -26,6 +26,9 @@ interface InputPanelProps {
     help: boolean;
     setHelp: (value: boolean) => void;
     pageName: string;
+    onOriginMapClick: () => void;
+    onDestinationMapClick: () => void;
+    activeMapPicker: 'origin' | 'destination' | null;
 }
 
 // Main Input Panel Component (Form)
@@ -37,7 +40,10 @@ export function InputPanel({
     estimatedTime, handleCalculate,
     modelVersions, 
     pageName, 
-    help, setHelp
+    help, setHelp,
+    onOriginMapClick,
+    onDestinationMapClick,
+    activeMapPicker
 }: InputPanelProps) {
   
   // sanitize spaces helper: remove all whitespace characters
@@ -112,12 +118,12 @@ export function InputPanel({
 
       {/* Origin Input */}
       <div className="space-y-1">
-        <label htmlFor="origin" className="text-sm font-medium block">Start position (lon, lat)</label>
+        <label htmlFor="origin" className="text-sm font-medium block">Start position (lat, lon)</label>
         <div className="relative">
           <Input
             id="origin"
             name="origin"
-            placeholder="e.g., 126.63, 45.75"
+            placeholder="e.g., 45.75, 126.63"
             value={origin}
             onChange={(e) => setOrigin(e.target.value)}
             className={cn(
@@ -129,9 +135,12 @@ export function InputPanel({
             inputMode="decimal"
             onPaste={makePasteHandler(setOrigin)}
           />
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
-            <IconButton label="Open map picker" onClick={() => {/* call function */}}>
-              <MapPin className="h-4 w-4 " />
+          <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center">
+            <IconButton label="Open map picker" onClick={onOriginMapClick}>
+              <MapPin className={cn(
+                "h-4 w-4",
+                activeMapPicker === 'origin'
+              )} />
             </IconButton>
           </div>
         </div>
@@ -139,12 +148,12 @@ export function InputPanel({
 
       {/* Destination Input */}
       <div className="space-y-1">
-        <label htmlFor="destination" className="text-sm font-medium block">Destination (lon, lat)</label>
+        <label htmlFor="destination" className="text-sm font-medium block">Destination (lat, lon)</label>
         <div className="relative">
           <Input
             id="destination"
             name="destination"
-            placeholder="e.g., 126.54, 45.80"
+            placeholder="e.g., 45.80, 126.54"
             value={destination}
             onChange={(e) => setDestination(e.target.value)}
             className={cn(
@@ -156,9 +165,12 @@ export function InputPanel({
             inputMode="decimal"
             onPaste={makePasteHandler(setDestination)}
           />
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
-            <IconButton label="Open map picker" onClick={() => {/* call function */}}>
-              <MapPin className="h-4 w-4 " />
+          <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center">
+            <IconButton label="Open map picker" onClick={onDestinationMapClick}>
+              <MapPin className={cn(
+                "h-4 w-4",
+                activeMapPicker === 'destination' 
+              )} />
             </IconButton>
           </div>
         </div>
@@ -191,7 +203,7 @@ export function InputPanel({
           name="modelVersion"
           value={modelVersion}
           onChange={(e) => setModelVersion(e.target.value)}
-          className="w-full rounded-md border px-3 py-2 cursor-pointer "
+          className="w-full rounded-md border px-2 py-2 cursor-pointer "
         >
           {modelVersions.map((v) => (
             <option key={v} value={v}>{v} </option>
@@ -204,19 +216,19 @@ export function InputPanel({
         type="submit"
         className="mt-4 w-full font-semibold transition duration-200 shadow-lg cursor-pointer hover:shadow-xl"
         size="lg"
-        disabled={estimatedTime.loading}
+        disabled={estimatedTime.displayLoading}
         variant={"secondary"}
       >
-        {estimatedTime.loading ? "Calculating..." : "Calculate travel time"}
+        {estimatedTime.displayLoading ? "Calculating.." : "Calculate travel time"}
       </Button>
 
-      <Separator className="mt-4 mb-2" />
+      <Separator className="mt-2 mb-2" />
 
       {/* Estimated Travel Time Display */}
       <Display
         time={estimatedTime}
         error={estimatedTime.error}
-        loading={estimatedTime.loading}
+        loading={estimatedTime.displayLoading}
       />
     </form>
   );

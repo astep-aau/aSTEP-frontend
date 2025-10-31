@@ -1,8 +1,20 @@
-//'use client'
+'use client'
+
+/**
+ * Interactive Map Component 
+ * FEATURES:
+ * - Custom colored markers (green for origin, red for destination)
+ * - Click-to-select coordinate functionality with visual feedback
+ * - Crosshair cursor and dashed border when in picker mode
+ * - Automatic map bounds adjustment to fit all markers
+ * - Route path visualization with blue polyline
+ * - Popup information windows for each marker
+ * - Mouse wheel zoom support
+ */
 
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, useMapEvents } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
-import { useState, useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import L from 'leaflet'
 
 // Fix Leaflet default icon issue in Next.js
@@ -33,6 +45,7 @@ const destinationIcon = new L.Icon({
   shadowSize: [41, 41]
 })
 
+// Component Props
 interface MapProps {
   center?: [number, number]
   zoom?: number
@@ -46,8 +59,10 @@ interface MapProps {
 
 // Component to handle map clicks for coordinate picking
 function MapClickHandler({ onMapClick, clickable }: { onMapClick?: (lat: number, lon: number) => void, clickable?: boolean }) {
+  // Get the map instance
   const map = useMap();
   
+  // Change cursor style based on clickable prop
   useEffect(() => {
     const container = map.getContainer();
     if (clickable) {
@@ -58,7 +73,8 @@ function MapClickHandler({ onMapClick, clickable }: { onMapClick?: (lat: number,
       container.style.border = '';
     }
   }, [clickable, map]);
-  
+
+  // Handle map click events
   useMapEvents({
     click: (e) => {
       if (clickable && onMapClick) {
@@ -76,6 +92,7 @@ function MapBoundsUpdater({ origin, destination }:
   destination?: { lat: number; lon: number } | null }) {
   const map = useMap()
 
+  // Update map bounds when origin or destination changes
   useEffect(() => {
     if (origin && !destination) {
       map.setView([origin.lat, origin.lon], 13)
@@ -97,6 +114,7 @@ function MapBoundsUpdater({ origin, destination }:
   return null
 }
 
+// Main Map Component
 export function Map({ 
   center = [45.755536, 126.636858],
   zoom = 10,
@@ -106,31 +124,8 @@ export function Map({
   className = "h-96 w-full rounded-lg",
   onMapClick,
   clickable = false,
-}: MapProps) {/*
-  const [route, setRoute] = useState<[number, number][]>([])
-  const [distance, setDistance] = useState<number | null>(null)
-  const [duration, setDuration] = useState<number | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  {loading && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-900">
-          Calculating route...
-        </div>
-      )}
-      
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-900">
-          {error}
-        </div>
-      )}
-      
-      {distance && duration && !loading && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-900">
-          <strong>Route:</strong> {distance.toFixed(2)} km • {duration.toFixed(0)} minutes (OSRM estimate)
-        </div>
-      )}
-*/
+}: MapProps) {
+  // Render the map container with layers, markers, and polylines
   return (
     <div className="space-y-2">
       {/* Map container */}
@@ -141,8 +136,9 @@ export function Map({
           scrollWheelZoom={true}
           className="h-full w-full rounded-lg"
         >
+          {/* Base tile layer */}
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           
@@ -152,7 +148,7 @@ export function Map({
               <Popup>
                 <div>
                   <h3 className="font-semibold">Origin</h3>
-                  <p className="text-xs">({origin.lon.toFixed(4)}, {origin.lat.toFixed(4)})</p>
+                  <p className="text-xs">({origin.lat.toFixed(4)}, {origin.lon.toFixed(4)})</p>
                 </div>
               </Popup>
             </Marker>
@@ -164,13 +160,13 @@ export function Map({
               <Popup>
                 <div>
                   <h3 className="font-semibold">Destination</h3>
-                  <p className="text-xs">({destination.lon.toFixed(4)}, {destination.lat.toFixed(4)})</p>
+                  <p className="text-xs">({destination.lat.toFixed(4)}, {destination.lon.toFixed(4)})</p>
                 </div>
               </Popup>
             </Marker>
           )}
           
-          {/* Route polyline (blue) */}
+          {/* Route polyline */}
           {routeData && routeData.length > 0 && (
             <Polyline 
               positions={routeData} 

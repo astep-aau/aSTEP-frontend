@@ -1,5 +1,11 @@
 "use client"
 
+/**
+ * Visual Panel Component
+ * 
+ * Container component that manages the map display and help modal.
+ */
+
 import React from "react"; 
 import { ParsedCoordinate } from "./page"; 
 import { Loader2 } from "lucide-react";
@@ -60,8 +66,8 @@ export function VisualPanel({ origin, destination, routeData, loading, helpOpen,
                     {/* Loading Overlay */}
                     {loading && (
                         <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center rounded-lg" style={{ zIndex: 1000 }}>
-                            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-                            <span className="ml-3 text-lg font-medium text-blue-700">Drawing Route...</span>
+                            <Loader2 className="h-8 w-8 animate-spin " />
+                            <span className="ml-3 text-lg font-medium">Drawing Route...</span>
                         </div>
                     )}
                 </div>

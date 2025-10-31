@@ -1,20 +1,36 @@
 "use client";
 
+/**
+ * Group 3 - Travel Time Estimation Application
+ * 
+ * This is the main coordinator component that manages all state and business logic
+ * for the travel time estimation feature. It handles:
+ * - User input for origin, destination, and travel time
+ * - Coordinate parsing and validation
+ * - Map interaction (click-to-select coordinates)
+ */
+
 import { InputPanel } from "./inputPanel";
 import { VisualPanel } from "./visualPanel";
 import React, { useState } from "react"; 
 
-// Måske bruges, nok sættes i ny fil ifølge robotten
+// For map use
+export interface ParsedCoordinate {     
+    lat: number; 
+    lon: number; 
+}
 
-export interface ParsedCoordinate { lat: number; lon: number; }
+// Keep track of backend response state
 export interface EstimatedTimeState {
     hours: number | null;
     minutes: number | null;
+    distanceKm: number | null;
     error: ValidationError | null;
     displayLoading: boolean;
     mapRouteLoading: boolean;
 }
 
+// Keep track of type of errors
 interface ValidationError {
     origin?: string;
     destination?: string;
@@ -23,23 +39,23 @@ interface ValidationError {
 }
 
 export default function Group3Page() {
+
     // TODO: Skal hentes fra database
     const modelVersions = ["LSTM 1.01", "LSTM 1.1", "LSTM 2.0 (Experimental)"]; 
     const [help, setHelp] = useState(false);
 
-    // Application Input State (Used by InputPanel)
+    // Application Input State 
     const [origin, setOrigin] = useState(''); 
     const [destination, setDestination] = useState('');
     const [timeOfTravel, setTimeOfTravel] = useState('');
     const [modelVersion, setModelVersion] = useState(modelVersions[0]);
 
-    // TODO: Replace values with variables from backend
-    // Application Output State (Used by InputPanel (Display) and VisualPanel (Route))
+    // Application Output State
     const [estimatedTime, setEstimatedTime] = useState<EstimatedTimeState>({ 
-        hours: null, minutes: null, error: null, displayLoading: false, mapRouteLoading: false
+        hours: null, minutes: null, distanceKm: null, error: null, displayLoading: false, mapRouteLoading: false
     });
 
-    // TODO: Fix to be used for map display
+    // Map related state
     const [parsedOrigin, setParsedOrigin] = useState<ParsedCoordinate | null>(null);
     const [parsedDestination, setParsedDestination] = useState<ParsedCoordinate | null>(null);
     const [routeData, setRouteData] = useState<any>(null); // State for the route geometry/points
@@ -51,7 +67,7 @@ export default function Group3Page() {
     const parseCoordinate = (coordString: string): ParsedCoordinate | null => {
         const coordPattern = /^-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?$/;
         if (!coordPattern.test(coordString.trim())) {
-            return null; // Invalid format
+            return null; 
         }
         const parts = coordString.split(',').map(p => p.trim());
         return {
@@ -83,109 +99,6 @@ export default function Group3Page() {
             setActiveMapPicker(null); 
         }
     };
-    
-    // Function to send data to backend API
-    const sendDataToBackend = async (backendUrl: string, dataToSend: any ): Promise<void> => {
-      try{
-          const response = await fetch(backendUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(dataToSend),
-          });
-
-          // Handle non-OK responses
-          if (!response.ok) {
-            setEstimatedTime(prev => ({ ...prev, displayLoading: false, mapRouteLoading: false, error: { general: "Error occurred while fetching data." } }));
-            throw new Error(`HTTP error! status: ${response.status}`);            
-          }
-
-          // Handle ok responses
-          if (response.ok) {
-            console.log("Backend response received successfully.");
-          }
-        } catch (error) {
-          console.error("Error during API call:", error);
-          setEstimatedTime(prev => ({ ...prev, displayLoading: false, mapRouteLoading: false, error: { general: "unknown error occurred" } }));
-        }
-    };
-
-    var receiveRouteFromBackend = async (backendUrl: string, dataToReceive: any): Promise<void> => {
-        try {
-            const response = await fetch(backendUrl, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
-
-            if (response.ok) {
-                const responseData = await response.json();
-
-                setRouteData(responseData.path);
-                setEstimatedTime(prev => ({ ...prev, mapRouteLoading: false, error: null }));                
-            }
-
-             if (!response.ok) {
-                // Handle non-OK responses
-                console.error("Error response from backend:", response.status);
-                setEstimatedTime(prev => ({ ...prev, displayLoading: false, mapRouteLoading: false, error: { general: "Error occurred while fetching data." } }));
-                return;
-            }
-        }
-        catch (error) {
-            console.error("Error during API call:", error);
-            setEstimatedTime(prev => ({ ...prev, displayLoading: false, mapRouteLoading: false, error: { general: "unknown error occurred" } }));
-        }
-    }
-
-    //  Function to fetch travel time data from backend API on url: localhost:5000/api/GetTravelTimeEndpoint
-    var receiveTimeFromBackend = async (backendUrl: string, dataToReceive: any): Promise<void> => {
-        try {
-            // Convert dataToReceive to query string
-            const queryString = new URLSearchParams(dataToReceive).toString();
-            const fullUrl = `${backendUrl}?${queryString}`;
-
-            const response = await fetch(fullUrl, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
-
-            if (response.ok) {
-                const responseData = await response.json();
-                console.log("Received data from backend:", responseData);
-                
-                // Convert total minutes to hours, minutes, and seconds
-                const totalMinutes = responseData.travelTimeMinutes || 0;
-                const hours = Math.floor(totalMinutes / 60);
-                const minutes = Math.floor(totalMinutes % 60);
-                
-                // Update state with received data as needed
-                setEstimatedTime(prev => ({ 
-                    ...prev, 
-                    hours: hours,
-                    minutes: minutes,
-                    displayLoading: false,
-                    mapRouteLoading: false,
-                    error: null
-                }));
-                return;
-            }
-            if (!response.ok) {
-                // Handle non-OK responses
-                console.error("Error response from backend:", response.status);
-                setEstimatedTime(prev => ({ ...prev, displayLoading: false, mapRouteLoading: false, error: { general: "Error occurred while fetching data." } }));
-                return;
-            }
-        }
-        catch (error) {
-            console.error("Error during API call:", error);
-            setEstimatedTime(prev => ({ ...prev, displayLoading: false, mapRouteLoading: false, error: { general: "unknown error occurred" } }));
-        }
-    }
 
     // Main calculation handler triggered onSubmit from InputPanel
     const handleCalculate = async () => {
@@ -217,28 +130,8 @@ export default function Group3Page() {
         // Proceed with calculation if validation passes - Loading state
         setEstimatedTime(prev => ({ ...prev, displayLoading: true, mapRouteLoading: true, error: null }));
 
-        const correlationId = crypto.randomUUID();
+        // Backend API calls
 
-        // Prepare JSON data for backend, matching the C# CreateProcessRequest
-        const requestData = {
-          Origin: origin,
-          Destination: destination,
-          TimeOfTravel: timeOfTravel,
-          modelVersion: modelVersion,
-          CorrelationId: correlationId
-        };
-        const backendUrlPost = "http://localhost:5000/api/processes";
-        const backendUrlFetchTime = `http://localhost:5000/api/GetTravelTimeEndpoint/${correlationId}`;
-        const backendUrlGetRoute = `http://localhost:5000/api/route?correlationId=${correlationId}`;
-
-        // Send data to backend - function handles errors and updates state
-        await sendDataToBackend(backendUrlPost, requestData);
-        // Wait for 5 seconds before fetching the result
-        await new Promise(resolve => setTimeout(resolve, 100000));
-        await receiveRouteFromBackend(backendUrlGetRoute, { CorrelationId: correlationId });
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        await receiveTimeFromBackend(backendUrlFetchTime, { CorrelationId: correlationId });
-        
       };
      
     return (

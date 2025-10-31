@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * Icon Button Component
+ * 
+ * Reusable button component specifically designed for icon-only buttons.
+ */
+
 import type { ReactNode, MouseEvent } from 'react';
 
 interface IconButtonProps {

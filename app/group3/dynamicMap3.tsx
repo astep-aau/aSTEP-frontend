@@ -1,5 +1,11 @@
 'use client'
 
+/**
+ * Dynamic Map Wrapper Component
+ * 
+ * This file provides a dynamic import wrapper for the Leaflet map component.
+ */
+
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import type { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet'
@@ -15,7 +21,7 @@ interface MapProps {
   className?: string
 }
 
-// Dynamically import the Map component with SSR disabled
+// Dynamically import the Map component
 const MapComponent = dynamic(
   () => import('./map3').then((mod) => mod.Map),
   { 

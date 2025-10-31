@@ -1,5 +1,18 @@
 "use client";
 
+/**
+ * Input Panel Component
+ * 
+ * Form component that handles user input for travel time estimation.
+ * Features:
+ * - Origin and destination coordinate inputs with map picker buttons
+ * - Time of travel input (24-hour format)
+ * - Model version selection dropdown
+ * - Input validation and sanitization
+ * - Real-time error feedback
+ * - Results display section
+ */
+
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -222,7 +235,7 @@ export function InputPanel({
         {estimatedTime.displayLoading ? "Calculating.." : "Calculate travel time"}
       </Button>
 
-      <Separator className="mt-2 mb-2" />
+      <Separator className="mt-2 mb-1" />
 
       {/* Estimated Travel Time Display */}
       <Display

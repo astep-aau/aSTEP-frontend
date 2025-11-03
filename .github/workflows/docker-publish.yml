@@ -1,4 +1,4 @@
-name: Build and Push Docker image
+name: Build and Deploy
 
 on:
   push:
@@ -12,7 +12,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-      id-token: write
 
     steps:
       - name: Checkout repository
@@ -35,3 +34,22 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/${{ steps.repo.outputs.repo_lower }}:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: self-hosted
+    
+    steps:
+      - name: Check permissions
+        run: |
+          echo "Checking runner identity and permissions..."
+          kubectl auth whoami
+          kubectl auth can-i update deployments -n main
+        
+      - name: Rollout restart deployment
+        run: |
+          kubectl rollout restart deployment/frontend -n main
+          
+      - name: Wait for rollout to complete
+        run: |
+          kubectl rollout status deployment/frontend -n main --timeout=5m

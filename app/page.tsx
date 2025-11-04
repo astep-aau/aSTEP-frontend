@@ -4,7 +4,7 @@ export default function Home() {
   return (
     <div className="container mx-auto px-6 py-8 max-w-4xl">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-foreground text-center">aSTEPPPPP</h1>
+        <h1 className="text-4xl font-bold text-foreground text-center">aSTEP</h1>
         <h1 className="text-4xl font-bold text-foreground mb-4 text-center">AAU Spatio-TEmporal data analytics Platform</h1>
         <p className="text-lg text-muted-foreground">
           Discover what each group is working on in the aSTEP platform.

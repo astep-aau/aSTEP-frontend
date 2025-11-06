@@ -9,6 +9,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      pull-requests: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -23,14 +27,29 @@ jobs:
         run: npm ci
 
       - name: Run build
+        id: build
         run: npm run build
 
-      - name: Build status
-        if: success()
-        run: echo "Build completed successfully! PR can be merged."
+      - name: Comment on PR - Success
+        if: success() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ **Build succeeded!** The PR is ready to be merged.\n\n[View workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})'
+            })
 
-      - name: Build failed
-        if: failure()
-        run: |
-          echo "Build failed! Please fix the errors before merging."
-          exit 1
+      - name: Comment on PR - Failure
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ **Build failed!** Please fix the errors before merging.\n\n[View workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})'
+            })

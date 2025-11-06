@@ -43,7 +43,7 @@ export function VisualPanel({ origin, destination, routeData, loading, helpOpen,
     )}
 
     return (        
-        <div className="flex flex-col gap-5 p-6 rounded-lg border border-gray-200 shadow-xl w-full h-full">
+        <div className="flex flex-col gap-5 p-6 rounded-lg border shadow-xl w-full h-full">
       
       {/* Location Header (City Title) */}
       <h2 className="text-xl font-bold mb-2 text-center underline">

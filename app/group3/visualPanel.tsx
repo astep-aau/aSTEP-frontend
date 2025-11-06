@@ -33,8 +33,8 @@ export function VisualPanel({ origin, destination, routeData, loading, helpOpen,
                     <div className="flex flex-col gap-5 p-6 rounded-lg border shadow-lg w-full h-full overflow-y-auto max-h-[700px]">
                         <div className="text-sm">
                             <ul className="space-y-2">
-                                <li><strong>Start position</strong>: Enter lat, lon (e.g., 45.75, 126.63)</li>
-                                <li><strong>Destination</strong>: Enter lat, lon (e.g., 45.80, 126.54)</li>
+                                <li><strong>Start position</strong>: Enter lat, lon (e.g., 45.774827, 126.646415). Use 6 decimals</li>
+                                <li><strong>Destination</strong>: Enter lat, lon (e.g., 45.771594, 126.631137). Use 6 decimals</li>
                                 <li><strong>Time</strong>: 24-hour format, e.g., 14:00.</li>
                                 <li><strong>Model</strong>: Choose between available model versions.</li>
                             </ul>

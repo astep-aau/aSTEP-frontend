@@ -40,6 +40,14 @@ interface ValidationError {
     general?: string;
 }
 
+interface BackendRequestData {
+    Origin: string;
+    Destination: string;
+    TimeOfTravel: string;
+    modelVersion: string;
+    CorrelationId: string;
+}
+
 export default function Group3Page() {
 
     // TODO: Skal hentes fra database
@@ -60,7 +68,7 @@ export default function Group3Page() {
     // Map related state
     const [parsedOrigin, setParsedOrigin] = useState<ParsedCoordinate | null>(null);
     const [parsedDestination, setParsedDestination] = useState<ParsedCoordinate | null>(null);
-    const [routeData, setRouteData] = useState<any>(null); // State for the route geometry/points
+    const [routeData, setRouteData] = useState<[number, number][] | undefined>(undefined); // State for the route geometry/points
     
     // Map picker state - tracks which input field is active for map picking
     const [activeMapPicker, setActiveMapPicker] = useState<'origin' | 'destination' | null>(null);
@@ -103,7 +111,7 @@ export default function Group3Page() {
     };
 
         // Function to send data to backend API
-    const sendDataToBackend = async (backendUrl: string, dataToSend: any ): Promise<void> => {
+    const sendDataToBackend = async (backendUrl: string, dataToSend: BackendRequestData ): Promise<void> => {
       try{
         log.info("Sending data to backend:", dataToSend);
         const response = await fetch(backendUrl, {
@@ -140,7 +148,7 @@ export default function Group3Page() {
     };
 
     //  Function to fetch route data from backend API
-    const receiveRouteFromBackend = async (backendUrl: string, dataToReceive: any): Promise<void> => {
+    const receiveRouteFromBackend = async (backendUrl: string): Promise<void> => {
         try {
             const startTime = Date.now();
             let response;
@@ -158,7 +166,7 @@ export default function Group3Page() {
 
                     const route = responseData.path?.map((point: { longitude: number, latitude: number }) => 
                         [point.longitude, point.latitude] as [number, number]
-                    ) || null;
+                    ) || undefined;
 
                     setRouteData(route);
                     setEstimatedTime(prev => ({
@@ -189,7 +197,7 @@ export default function Group3Page() {
     }
 
     //  Function to fetch travel time data from backend API 
-    var receiveTimeFromBackend = async (backendUrl: string, dataToReceive: any): Promise<void> => {
+    var receiveTimeFromBackend = async (backendUrl: string, dataToReceive: Record<string, string>): Promise<void> => {
         try {
             const queryString = new URLSearchParams(dataToReceive).toString();
             const fullUrl = `${backendUrl}?${queryString}`;
@@ -301,7 +309,7 @@ export default function Group3Page() {
             await sendDataToBackend(backendUrlPost, requestData);
             log.info("Data sent to backend.");
 
-            await receiveRouteFromBackend(backendUrlGetRoute, { CorrelationId: correlationId });
+            await receiveRouteFromBackend(backendUrlGetRoute);
             log.info("Route data received from backend.");
 
             await receiveTimeFromBackend(backendUrlFetchTime, { CorrelationId: correlationId });

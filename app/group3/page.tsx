@@ -38,6 +38,15 @@ interface ValidationError {
     general?: string;
 }
 
+// Backend request data structure
+interface BackendRequestData {
+    Origin: string;
+    Destination: string;
+    TimeOfTravel: string;
+    modelVersion: string;
+    CorrelationId: string;
+}
+
 export default function Group3Page() {
 
     // TODO: Skal hentes fra database
@@ -58,7 +67,7 @@ export default function Group3Page() {
     // Map related state
     const [parsedOrigin, setParsedOrigin] = useState<ParsedCoordinate | null>(null);
     const [parsedDestination, setParsedDestination] = useState<ParsedCoordinate | null>(null);
-    const [routeData, setRouteData] = useState<any>(null); // State for the route geometry/points
+    const [routeData, setRouteData] = useState<[number, number][] | undefined>(undefined); // State for the route geometry/points
     
     // Map picker state - tracks which input field is active for map picking
     const [activeMapPicker, setActiveMapPicker] = useState<'origin' | 'destination' | null>(null);
@@ -101,7 +110,7 @@ export default function Group3Page() {
     };
 
         // Function to send data to backend API
-    const sendDataToBackend = async (backendUrl: string, dataToSend: any ): Promise<void> => {
+    const sendDataToBackend = async (backendUrl: string, dataToSend: BackendRequestData ): Promise<void> => {
       try{
           const response = await fetch(backendUrl, {
             method: 'POST',
@@ -127,7 +136,7 @@ export default function Group3Page() {
     };
 
     //  Function to fetch route data from backend API
-    var receiveRouteFromBackend = async (backendUrl: string, dataToReceive: any): Promise<void> => {
+    const receiveRouteFromBackend = async (backendUrl: string): Promise<void> => {
         try {
             const response = await fetch(backendUrl, {
                 method: 'GET',
@@ -141,9 +150,9 @@ export default function Group3Page() {
                 console.log("Received data from backend:", responseData);
 
                 // Transform path from { longitude: number, latitude: number } arra to [longitude, latitude] tuples
-                const route = responseData.path?.map((point: { longitude: number, latitude: number }) => 
+                const route = responseData.path?.map((point: { longitude: number, latitude: number }) =>
                     [point.longitude, point.latitude] as [number, number]
-                ) || null;
+                ) || undefined;
                 
                 setRouteData(route);
                 setEstimatedTime(prev => ({ ...prev, distanceKm: responseData.distanceKm || null, mapRouteLoading: false, error: null }));                
@@ -161,8 +170,8 @@ export default function Group3Page() {
         }
     }
 
-    //  Function to fetch travel time data from backend API 
-    var receiveTimeFromBackend = async (backendUrl: string, dataToReceive: any): Promise<void> => {
+    //  Function to fetch travel time data from backend API
+    const receiveTimeFromBackend = async (backendUrl: string, dataToReceive: Record<string, string>): Promise<void> => {
         try {
             const queryString = new URLSearchParams(dataToReceive).toString();
             const fullUrl = `${backendUrl}?${queryString}`;
@@ -242,23 +251,23 @@ export default function Group3Page() {
         const correlationId = crypto.randomUUID();
 
         // Prepare JSON data for backend, matching the C# CreateProcessRequest
-        try {
-            const requestData = {
-                Origin: origin,
-                Destination: destination,
-                TimeOfTravel: timeOfTravel,
-                modelVersion: modelVersion,
-                CorrelationId: correlationId
-            };
+        const requestData = {
+            Origin: origin,
+            Destination: destination,
+            TimeOfTravel: timeOfTravel,
+            modelVersion: modelVersion,
+            CorrelationId: correlationId
+        };
 
+        try {
             if (requestData.Origin === null || requestData === undefined) {
                 throw new Error("Request data is null or undefined");
             }
-            
+
 
         }
-        catch (error) {
-
+        catch {
+            // Validation error - continue with request
         }
 
 
@@ -271,7 +280,7 @@ export default function Group3Page() {
         await sendDataToBackend(backendUrlPost, requestData);
         // Wait for 5 seconds before fetching the result
         await new Promise(resolve => setTimeout(resolve, 60000));
-        await receiveRouteFromBackend(backendUrlGetRoute, { CorrelationId: correlationId });
+        await receiveRouteFromBackend(backendUrlGetRoute);
         await new Promise(resolve => setTimeout(resolve, 5000));
         await receiveTimeFromBackend(backendUrlFetchTime, { CorrelationId: correlationId });
 

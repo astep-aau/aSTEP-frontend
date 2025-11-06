@@ -21,7 +21,7 @@ export function IconButton({ label, children, className = '', onClick, disabled 
     <button
       type="button"
       aria-label={label}
-      className={`inline-flex items-center justify-center p-1 rounded-full cursor-pointer hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary ${className}`}
+      className={`inline-flex items-center justify-center p-1 rounded-full cursor-pointer hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary hover:[&>svg]:stroke-zinc-950 hover:dark:bg-zinc-300/70 ${className}`}
       onClick={onClick}
     >
       {children}

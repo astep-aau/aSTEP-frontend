@@ -1,13 +1,10 @@
 'use client'
 
-import Image from "next/image";
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useState } from 'react';
 import Dropzone from 'react-dropzone'
-import React, {useCallback} from 'react'
-import {useDropzone} from 'react-dropzone'
-import {FileUpload} from "../../components/Gruppe2/FileUpload.tsx"
+import React from 'react'
+import {FileUpload} from "@/components/Gruppe2/FileUpload"
 
 
 export default function Home() {
@@ -41,8 +38,9 @@ export default function Home() {
                 </div>
 
                 <div className="flex flex-col w-full max-w-sm items-center gap-5">
+                    //placeholder no functionality
                     <Input type="text" placeholder="UserName"/>
-                    <Input type="text"/>
+                    <Input type="text" placeholder="Password"/>
                 </div>
                 <Button className="bg-sky-500 hover:bg-sky-700 ..." variant="outline">Button</Button>
 

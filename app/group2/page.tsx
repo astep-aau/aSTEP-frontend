@@ -38,7 +38,7 @@ export default function Home() {
                 </div>
 
                 <div className="flex flex-col w-full max-w-sm items-center gap-5">
-                    //placeholder no functionality
+                    {/*placeholder no functionality*/}
                     <Input type="text" placeholder="UserName"/>
                     <Input type="text" placeholder="Password"/>
                 </div>

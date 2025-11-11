@@ -18,7 +18,7 @@ function uploadFile(file) {
     .catch(err => console.error(err));
 }
 export default function FileUpload() {
-  const [userFile, setUserFile]=useState<any>(null)
+  const [userFile, setUserFile]=useState<File | null>(null)
   const handleChange = e => {
     const file = e.target.files[0];
     if (!file) return;

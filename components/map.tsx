@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css'
 import { useState } from 'react'
 import L from 'leaflet'
 
+
 type IconDefaultWithPrivate = typeof L.Icon.Default.prototype & {
     _getIconUrl?: () => string;
 };

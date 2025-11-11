@@ -16,21 +16,15 @@ export default function Home() {
             className="font-sans grid grid-rows-[20px_1fr_20px] items-left justify-items-left min-h-screen p-8 pb-20 gap-16 sm:p-20">
             <main className="flex flex-col gap-[32px] row-start-1 items-center sm:items-start">
                 <h1>This is the app/group2/page.tsx file</h1>
-                <h1>Hewwo u.u</h1>
-                <h1>here is the upload field</h1>
-
                 <FileUpload/>
 
                 <div>
-
-
                     <Dropzone onDrop={acceptedFiles => console.log(acceptedFiles)}>
                         {({getRootProps, getInputProps}) => (
                             <section>
                                 <div {...getRootProps()}>
                                     <input {...getInputProps()} />
                                     <p>Drag and drop file here, or click to select the file</p>
-
                                 </div>
                             </section>
                         )}

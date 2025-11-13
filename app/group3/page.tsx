@@ -147,8 +147,7 @@ export default function Group3Page() {
         }
     };
 
-    //  Function to fetch route data from backend API
-    const receiveRouteFromBackend = async (backendUrl: string): Promise<void> => {
+    const receiveDataFromBackend = async (backendUrl: string, dataToReceive: Record<string, string>): Promise<void> => {
         try {
             const startTime = Date.now();
             let response;
@@ -167,12 +166,18 @@ export default function Group3Page() {
                     const route = responseData.path?.map((point: { longitude: number, latitude: number }) => 
                         [point.longitude, point.latitude] as [number, number]
                     ) || undefined;
-
                     setRouteData(route);
+
+                    const totalMinutes = responseData.travelTimeMinutes || 0;
+                    const hours = Math.floor(totalMinutes / 60);
+                    const minutes = Math.floor(totalMinutes % 60);
                     setEstimatedTime(prev => ({
                         ...prev,
+                        hours: hours,
+                        minutes: minutes,
                         distanceKm: responseData.distanceKm || null,
                         mapRouteLoading: false,
+                        displayLoading: false,
                         error: null
                     }));
                     return;
@@ -190,62 +195,7 @@ export default function Group3Page() {
                 ...prev, 
                 displayLoading: false, 
                 mapRouteLoading: false, 
-                error: { general: "An error occurred while fetching the route." }
-            }));
-            throw error;
-        }
-    }
-
-    //  Function to fetch travel time data from backend API 
-    var receiveTimeFromBackend = async (backendUrl: string, dataToReceive: Record<string, string>): Promise<void> => {
-        try {
-            const queryString = new URLSearchParams(dataToReceive).toString();
-            const fullUrl = `${backendUrl}?${queryString}`;
-
-            const startTime = Date.now();
-            let response;
-            while (Date.now() - startTime < 60000) {
-                response = await fetch(fullUrl, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-                if (response.ok) {
-                    const responseData = await response.json();
-                    log.info("Received travel time data from backend:", responseData);
-
-                    const totalMinutes = responseData.travelTimeMinutes || 0;
-                    const hours = Math.floor(totalMinutes / 60);
-                    const minutes = Math.floor(totalMinutes % 60);
-
-                    setEstimatedTime(prev => ({ 
-                        ...prev, 
-                        hours: hours,
-                        minutes: minutes,
-                        displayLoading: false,
-                        mapRouteLoading: false,
-                        error: null
-                    }));
-                    return;
-                }
-
-                // Wait 10 seconds before trying again
-                await new Promise(resolve => setTimeout(resolve, 10000));
-            }
-
-            // If response is not ok, log it to backend
-            const errorMessage = `Failed to fetch travel time: ${response?.status} ${response?.statusText}`;
-            log.error(errorMessage, new Error(errorMessage));
-            throw new Error(errorMessage);
-
-        
-        }
-        catch (error) {
-            setEstimatedTime(prev => ({ 
-                ...prev, 
-                displayLoading: false, 
-                mapRouteLoading: false, 
-                error: { general: "An error occured while fetching travel time." } 
+                error: { general: "An error occured while fetching data from backend." } 
             }));
             throw error;
         }
@@ -302,18 +252,14 @@ export default function Group3Page() {
 
             // Change the URLs to fit actual location when server is setup
             const backendUrlPost = "http://localhost:5000/api/processes";
-            const backendUrlFetchTime = `http://localhost:5000/api/GetTravelTimeEndpoint/${correlationId}`;
-            const backendUrlGetRoute = `http://localhost:5000/api/route?correlationId=${correlationId}`;
+            const backendUrlGet = `http://localhost:5000/api/route?correlationId=${correlationId}`;
 
             // Send data to backend - function handles errors and updates state
             await sendDataToBackend(backendUrlPost, requestData);
             log.info("Data sent to backend.");
 
-            await receiveRouteFromBackend(backendUrlGetRoute);
-            log.info("Route data received from backend.");
-
-            await receiveTimeFromBackend(backendUrlFetchTime, { CorrelationId: correlationId });
-            log.info("Travel time data received from backend.");
+            await receiveDataFromBackend(backendUrlGet, { CorrelationId: correlationId });
+            log.info("Data received from backend.");    
         }
         catch (error) {
             setEstimatedTime(prev => ({ 

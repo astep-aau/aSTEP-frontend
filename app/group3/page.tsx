@@ -163,8 +163,8 @@ export default function Group3Page() {
                     const responseData = await response.json();
                     log.info("Received route data from backend:", responseData);
 
-                    const route = responseData.path?.map((point: { longitude: number, latitude: number }) => 
-                        [point.longitude, point.latitude] as [number, number]
+                    const route = responseData.path?.map((point: { latitude: number, longitude: number }) => 
+                        [point.latitude, point.longitude] as [number, number]
                     ) || undefined;
                     setRouteData(route);
 

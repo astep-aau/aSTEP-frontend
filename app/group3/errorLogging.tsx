@@ -1,12 +1,12 @@
-const isDevelopment = false;  // Set to false in production environment
+const isDevelopment = process.env.NODE_ENV === 'development';
 
-export var log = {
-    info: (message: string, data?: any) => {
+export const log = {
+    info: (message: string, data?: object | string | number | boolean) => {
         if (isDevelopment) {
             console.log(`INFO: ${message}`, data);
         }
     },
-    error: async (message: string, error?: any) => {
+    error: async (message: string, error?: Error | string | object) => {
         if (isDevelopment) {
             console.error(`ERROR: ${message}`, error);
         }

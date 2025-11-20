@@ -1,50 +1,133 @@
-# aSTEP - Frontend
+# aSTEP - Integrated Frontend & Documentation
 
-## Getting Started
+This repository contains the aSTEP project frontend (Next.js) with integrated documentation (Astro/Starlight). The documentation is compiled to static files and served under the `/docs` path.
 
-First install the npm packages:
+## 🏗️ Repository Structure
+
+```
+aSTEP-frontend/
+├── app/                    # Next.js application routes
+├── components/             # React components
+├── docs/                   # Astro documentation site
+│   ├── src/
+│   │   └── content/
+│   │       └── docs/       # Documentation content (MDX files)
+│   │           ├── index.mdx      # Main docs landing page
+│   │           ├── cross-group/   # Cross-group collaboration docs
+│   │           ├── group-2/       # Group 2: Forecasting
+│   │           ├── group-3/       # Group 3: Travel Time Estimation
+│   │           ├── group-6/       # Group 6: Attributes Prediction
+│   │           ├── group-9/       # Group 9: Outlier Detection
+│   │           └── group-11/      # Group 11: Travel Time Estimation
+│   ├── astro.config.mjs    # Astro & sidebar configuration
+│   └── package.json        # Docs dependencies
+├── public/                 # Static assets
+│   └── docs/               # Built documentation (generated)
+├── Dockerfile              # Multi-stage build for both apps (docs & frontend)
+├── docker-compose.yml      # Docker compose configuration
+└── package.json            # Frontend dependencies
+```
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 20+
+- npm, yarn, pnpm, or bun
+
+### Local Development
+
+1. **Install dependencies:**
 
 ```bash
 npm install
 # or
-yarn install
-# or
-pnpm install
-# or
 bun install
 ```
 
-Then run the development server:
+2. **Run the development server:**
 
 ```bash
 npm run dev
 # or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+bun run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+This will:
 
-You can start editing the page by modifying `app/group**/page.tsx`. The page auto-updates as you edit the file.
+- Build the documentation site to static files
+- Copy the built docs to `public/docs/`
+- Start the Next.js development server
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. **Access the application:**
+   - Frontend: [http://localhost:3000](http://localhost:3000)
+   - Documentation: [http://localhost:3000/docs](http://localhost:3000/docs)
 
-## Learn More
+### Development Scripts
 
-To learn more about Next.js or ShadCn, take a look at the following resources:
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Build docs and start Next.js dev server |
+| `npm run dev:docs` | Start Astro dev server for docs only (port 4321) |
+| `npm run build` | Build both docs and Next.js for production |
+| `npm run build:docs` | Build docs only (production) |
+| `npm run build:docs:dev` | Build docs and copy to public folder (development) |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [Shadcn Docs](https://ui.shadcn.com/) - Shadcn Documentation.
+## 🐳 Docker Deployment
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Using Docker Compose
 
-## Deployment coming soon
+```bash
+docker compose up -d --build
+```
 
-Group 11 is currently working on kubernetes setup for project
+This will:
+
+- Build the Astro documentation to static files
+- Build the Next.js application with the docs included
+- Start the container on port 3000
+
+Access:
+
+- Frontend: <http://localhost:3000>
+- Documentation: <http://localhost:3000/docs>
+
+## 📝 Writing Documentation
+
+### For Group Members
+
+1. **Navigate to your group's folder** in `docs/src/content/docs/group-X/`
+2. **Create or edit `.md` or `.mdx` files** to document your work
+3. **Add images** to `docs/src/assets/` if needed
+4. **Update the sidebar** in `docs/astro.config.mjs` to include new pages
+
+### Adding Pages to the Sidebar
+
+Edit `docs/astro.config.mjs` and add items to your group's section:
+
+```javascript
+{
+  label: 'Group X: Your Topic',
+  items: [
+    { label: 'Overview', slug: 'group-X' },
+    { label: 'Your New Page', slug: 'group-X/your-new-page' },
+  ],
+}
+```
+
+The `slug` should match your file path relative to `docs/src/content/docs/` (without the `.md` extension).
+
+### Documentation Navigation
+
+All documentation links are automatically scoped to the `/docs` path. When you click links in the documentation:
+
+- `/cross-group/` → redirects to `/docs/cross-group/`
+- `/group-2/` → redirects to `/docs/group-2/`
+- Links within docs work seamlessly
+
+## Deployment Architecture (Coming Soon)
+
+Group 11 is currently working on Kubernetes setup for the project:
 
 ```mermaid
 architecture-beta
@@ -52,11 +135,11 @@ architecture-beta
     group tte(cloud)[TTE] in ks
     group ot(cloud)[OT] in ks
     service nextjs(server)[NextJS Server] in ks
-    service group11service(server)[REST service Group 11] in tte 
-    service group2service(server)[REST service Group 2] in ot   
-    service group3service(server)[REST service Group 3] in tte   
-    service group6service(server)[REST service Group 6] in tte   
-    service group9service(server)[REST service Group 9] in ot   
+    service group11service(server)[REST service Group 11] in tte
+    service group2service(server)[REST service Group 2] in ot
+    service group3service(server)[REST service Group 3] in tte
+    service group6service(server)[REST service Group 6] in tte
+    service group9service(server)[REST service Group 9] in ot
     service ttedatabase(database)[TTE Database] in tte
     service otherdatabase(database)[Other Database] in ot
 
@@ -75,91 +158,9 @@ architecture-beta
     group9service:R -- L:nextjs
 ```
 
-# aSTEP Documentation
+## 📚 Learn More
 
-This repository contains the documentation for all aSTEP project groups. Each group has their own dedicated section for documenting their work and findings.
-
-## 🏗️ Repository Structure
-
-```
-.
-├── public/                     # Static assets
-├── src/
-│   ├── assets/                # Images and other assets
-│   ├── content/
-│   │   └── docs/
-│   │       ├── index.mdx      # Main landing page
-│   │       ├── cross-group/   # Cross-group collaboration docs
-│   │       ├── group-2/       # Group 2: Forecasting
-│   │       ├── group-3/       # Group 3: Travel Time Estimation
-│   │       ├── group-6/       # Group 6: Attributes Prediction
-│   │       ├── group-9/       # Group 9: Outlier Detection
-│   │       └── group-11/      # Group 11: Travel Time Estimation
-│   └── content.config.ts
-├── astro.config.mjs           # Sidebar Configuration
-├── package.json
-└── tsconfig.json
-```
-
-## 📖 How to Use This Repository
-
-### For Group Members
-
-1. **Navigate to your group's folder**: Go to `src/content/docs/group-X/` where X is your group number
-2. **Create documentation files**: Add `.md` or `.mdx` files to document your work
-3. **Update your group's index.md**: Keep the main page for your group updated with links to your documentation
-4. **Add images**: Place images in `src/assets/` and reference them in your markdown files
-
-### Documentation Structure
-
-Each group should organize their documentation as follows:
-
-- `index.md` - Main page introducing your group's work
-- Individual `.md` files for specific topics, algorithms, or findings
-
-### Cross-Group Documentation
-
-Use the `cross-group/` directory for:
-
-- Shared work
-- Collaborative findings
-
-### File Organization
-
-- Use descriptive filenames (e.g., `data-preprocessing.md`, `model-architecture.md`)
-- Keep files focused on single topics
-
-### Adding Pages to the Sidebar
-
-To add new documentation pages to the website's navigation sidebar:
-
-1. **Edit `astro.config.mjs`** in the root directory
-2. **Find your group's section** in the `sidebar` array
-3. **Add new items** to your group's `items` array
-
-Example:
-
-```javascript
-{
-  label: 'Group X: Your Topic',
-  items: [
-    { label: 'Overview', slug: 'group-X' },
-    { label: 'Your New Page', slug: 'group-X/your-new-page' },
-  ],
-},
-```
-
-The `slug` should match your file path relative to `src/content/docs/` (without the `.md` extension).
-
-# Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Astro Documentation](https://docs.astro.build)
+- [Starlight Documentation](https://starlight.astro.build)
+- [shadcn/ui Documentation](https://ui.shadcn.com/)

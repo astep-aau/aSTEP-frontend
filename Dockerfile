@@ -1,6 +1,18 @@
 # syntax=docker/dockerfile:1
 
-# Stage 1: Dependencies
+# Stage 1: Build Documentation
+FROM node:20-alpine AS docs-builder
+WORKDIR /docs
+
+# Copy docs package files
+COPY docs/package*.json ./
+RUN npm ci
+
+# Copy docs source and build
+COPY docs/ ./
+RUN npm run build
+
+# Stage 2: Build Next.js Dependencies
 FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
@@ -9,7 +21,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# Stage 2: Builder
+# Stage 3: Build Next.js Application
 FROM node:20-alpine AS builder
 WORKDIR /app
 
@@ -17,13 +29,16 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Copy built documentation into public/docs directory
+COPY --from=docs-builder /docs/dist ./public/docs
+
 # Set environment variable for production build
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Build the application
 RUN npm run build
 
-# Stage 3: Runner
+# Stage 4: Production Runner
 FROM node:20-alpine AS runner
 WORKDIR /app
 

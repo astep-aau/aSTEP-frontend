@@ -40,6 +40,7 @@ interface ValidationError {
     general?: string;
 }
 
+// Backend request data structure
 interface BackendRequestData {
     Origin: string;
     Destination: string;
@@ -147,6 +148,7 @@ export default function Group3Page() {
         }
     };
 
+    //  Function to fetch route data from backend API
     const receiveDataFromBackend = async (backendUrl: string, dataToReceive: Record<string, string>): Promise<void> => {
         try {
             const startTime = Date.now();

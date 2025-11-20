@@ -177,7 +177,7 @@ export default function Group3Page() {
                         ...prev,
                         hours: hours,
                         minutes: minutes,
-                        distanceKm: responseData.distanceKm || null,
+                        distanceKm: responseData.distanceKm ?? null,
                         mapRouteLoading: false,
                         displayLoading: false,
                         error: null

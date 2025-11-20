@@ -372,6 +372,27 @@ foreach (int backwardEdgeId in currentNodeData.BackwardEdges)
 }
 ```
 
+## Path NodeId to RouteCoordinate conversion
+- `NodeIdToCoordinates` maps each node ID in the computed route to its corresponding latitude and longitude using the cached vertex dataset.
+- This produces a list of `RouteCoordinate` objects for route visualization.
+
+```csharp
+ public static List<Coordinate> Map(IReadOnlyList<string> nodeIds)
+    {
+        ArgumentNullException.ThrowIfNull(nodeIds);
+
+        var result = new List<Coordinate>(nodeIds.Count);
+        foreach (string id in nodeIds)
+        {
+            if (!NearestNodeFinder.TryGetCoordinates(id, out double lat, out double lon))
+                throw new KeyNotFoundException($"Node ID '{id}' not found in cache.");
+
+            result.Add(new Coordinate { Lat = lat, Lon = lon });
+        }
+        return result;
+    }
+```
+
 ## RouteResult entity
 
 ```csharp
@@ -453,6 +474,7 @@ The service includes comprehensive unit and integration tests:
 - **CreateRouteHandlerTests**: 19 tests documenting expected behavior with static helper outputs
 - **CreateRouteValidatorTests**: 69 tests covering all validation rules with edge cases
 - **NearestNodeFinderTests**: 30 tests covering coordinate parsing, distance calculations, and caching
+- **NodeIdToCoordinatesTests**: 10 tests covering node ID lookups, error handling, and edge cases
 - **ShortestRouteFinderTests**: 38 tests covering A* pathfinding, one-way edges, and route validation
 
 All tests use the production dataset files and are designed to fail if business logic changes unexpectedly, following test-driven development principles.

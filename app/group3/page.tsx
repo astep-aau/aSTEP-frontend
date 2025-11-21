@@ -253,7 +253,7 @@ export default function Group3Page() {
                 };
 
             // Change the URLs to fit actual location when server is setup
-            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://translator-service.cs-25-sw-5-03.svc.cluster.local/'; // Delete fallback when deployed
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://translator-service.cs-25-sw-5-03.svc.cluster.local'; // Delete fallback when deployed
             const backendUrlPost = `${baseUrl}/api/processes`;
             const backendUrlGet = `${baseUrl}/api/route?correlationId=${correlationId}`;
 

@@ -16,6 +16,7 @@ export default defineConfig({
           items: [
             // Each item here is one entry in the navigation menu.
             { label: 'Overview', slug: 'cross-group' },
+            { label: 'Frontend', slug: 'cross-group/frontend' },
           ],
         },
         {
@@ -37,7 +38,7 @@ export default defineConfig({
             { label: 'RabbitMQ', slug: 'group-3/rabbitmq' },
             { label: 'State Service', slug: 'group-3/state-service' },
             { label: 'Translator Service', slug: 'group-3/translator-service' },
-            {label: 'Route Estimation Service', slug: 'group-3/route-estimation-service' },
+            { label: 'Route Estimation Service', slug: 'group-3/route-estimation-service' },
             { label: 'Training Service', slug: 'group-3/training-service' },
           ],
         },

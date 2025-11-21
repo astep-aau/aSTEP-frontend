@@ -7,9 +7,17 @@ import Navbar from './Navbar';
 import MyDatasetPage from './MyDatasetPage';
 import UploadPage from './UploadPage';
 import AnalysisPage from './AnalysisPage';
+import { ChartDataItem, ApiResponse, AnomalyRange } from "./types"
 
 // Define the types for the pages
 type Page = 'MyDatasetPage' | 'UploadPage' | 'AnalysisPage';
+
+  const convertApiDataToChartFormat = (apiResponse: ApiResponse): ChartDataItem[] => {
+    return apiResponse.items.map((item) => ({
+      date: item.time,
+      value: item.value
+    }))
+  }
 
 export default function Home() {
     // State is typed as Page

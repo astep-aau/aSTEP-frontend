@@ -10,7 +10,7 @@ export const log = {
         if (isDevelopment) {
             console.error(`ERROR: ${message}`, error);
         }
-
+/*        
         if (!isDevelopment) {
             try {
                 const errorDetails = error instanceof Error ? {
@@ -36,5 +36,6 @@ export const log = {
                 console.error("Failed to log error to backend:", logError);
             }
         }
+*/        
     }
 }

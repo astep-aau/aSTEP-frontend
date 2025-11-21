@@ -59,7 +59,7 @@ const sendDataToBackend = async (backendUrl: string, dataToSend: BackendRequestD
 };
 ```
 
-- **Endpoint**: `http://localhost:5000/api/processes`
+- **Endpoint**: `{baseUrl}/api/processes`
 - **Method**: POST
 - **Correlation ID**: Generated using `crypto.randomUUID()` for request tracking
 - **Error Handling**: Catches HTTP errors and updates UI state with error messages
@@ -92,7 +92,7 @@ const receiveDataFromBackend = async (backendUrl: string, dataToReceive: Record<
 };
 ```
 
-- **Endpoint**: `http://localhost:5000/api/route?correlationId={correlationId}`
+- **Endpoint**: `{baseUrl}/api/route?correlationId={correlationId}`
 - **Method**: GET
 - **Polling Strategy**: Poll every 10 seconds for up to 60 seconds
 - **Timeout Handling**: If no successful response within 60 seconds, throw error
@@ -160,7 +160,7 @@ export const log = {
         
         if (!isDevelopment) {
             // Send to backend logging endpoint
-            await fetch('http://localhost:5000/api/logs/frontend', {
+            await fetch('{baseUrl}/api/logs/frontend', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

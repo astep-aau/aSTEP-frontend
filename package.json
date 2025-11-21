@@ -3,8 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "dev": "npm run build:docs:dev && next dev --turbopack",
+    "dev:docs": "cd docs && npm run dev",
+    "build": "npm run build:docs && next build --turbopack",
+    "build:docs": "cd docs && npm ci && npm run build && cd ..",
+    "build:docs:dev": "cd docs && npm install && npm run build && cd .. && mkdir -p public/docs && cp -r docs/dist/* public/docs/",
     "start": "next start",
     "lint": "eslint"
   },

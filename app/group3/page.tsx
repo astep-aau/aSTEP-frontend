@@ -13,6 +13,8 @@
 import { InputPanel } from "./inputPanel";
 import { VisualPanel } from "./visualPanel";
 import React, { useState } from "react"; 
+import { log } from "./errorLogging";
+
 
 // For map use
 export interface ParsedCoordinate {     
@@ -112,107 +114,92 @@ export default function Group3Page() {
         // Function to send data to backend API
     const sendDataToBackend = async (backendUrl: string, dataToSend: BackendRequestData ): Promise<void> => {
       try{
-          const response = await fetch(backendUrl, {
+        log.info("Sending data to backend:", dataToSend);
+        const response = await fetch(backendUrl, {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(dataToSend),
-          });
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dataToSend),
+        });
 
-           if (response.ok) {
-            console.log("Backend response received successfully.");
-          }
+        if (response.ok) {
+        log.info("Backend response received successfully.");
+        }
 
-          if (!response.ok) {
-            setEstimatedTime(prev => ({ ...prev, displayLoading: false, mapRouteLoading: false, error: { general: "Error occurred while fetching data." } }));
+        if (!response.ok) {
+            const errorMessage = `Failed to fetch route: ${response.status} ${response.statusText}`;
+            log.error(errorMessage, new Error(errorMessage));
+            setEstimatedTime(prev => ({ 
+                ...prev, displayLoading: false,
+                mapRouteLoading: false, 
+                error: { general: "Error occurred while fetching data." } 
+            }));
             throw new Error(`HTTP error! status: ${response.status}`);            
-          }
+        }
 
         } catch (error) {
-          console.error("Error during API call:", error);
-          setEstimatedTime(prev => ({ ...prev, displayLoading: false, mapRouteLoading: false, error: { general: "unknown error occurred" } }));
+          setEstimatedTime(prev => ({ 
+            ...prev, 
+            displayLoading: false, 
+            mapRouteLoading: false, 
+            error: { general: "unknown error occurred" } }));
+          throw error;
         }
     };
 
     //  Function to fetch route data from backend API
-    const receiveRouteFromBackend = async (backendUrl: string): Promise<void> => {
+    const receiveDataFromBackend = async (backendUrl: string, dataToReceive: Record<string, string>): Promise<void> => {
         try {
-            const response = await fetch(backendUrl, {
+            const startTime = Date.now();
+            let response;
+
+            while (Date.now() - startTime < 60000) {
+                response = await fetch(backendUrl, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
+                }});
+
+                if (response.ok) {
+                    const responseData = await response.json();
+                    log.info("Received route data from backend:", responseData);
+
+                    const route = responseData.path?.map((point: { latitude: number, longitude: number }) => 
+                        [point.latitude, point.longitude] as [number, number]
+                    ) || undefined;
+                    setRouteData(route);
+
+                    const totalMinutes = responseData.travelTimeMinutes || 0;
+                    const hours = Math.floor(totalMinutes / 60);
+                    const minutes = Math.floor(totalMinutes % 60);
+                    setEstimatedTime(prev => ({
+                        ...prev,
+                        hours: hours,
+                        minutes: minutes,
+                        distanceKm: responseData.distanceKm ?? null,
+                        mapRouteLoading: false,
+                        displayLoading: false,
+                        error: null
+                    }));
+                    return;
                 }
-            });
-
-            if (response.ok) {
-                const responseData = await response.json();
-                console.log("Received data from backend:", responseData);
-
-                // Transform path from { longitude: number, latitude: number } arra to [longitude, latitude] tuples
-                const route = responseData.path?.map((point: { longitude: number, latitude: number }) =>
-                    [point.longitude, point.latitude] as [number, number]
-                ) || undefined;
-                
-                setRouteData(route);
-                setEstimatedTime(prev => ({ ...prev, distanceKm: responseData.distanceKm || null, mapRouteLoading: false, error: null }));                
+                // Wait 10 seconds before trying again
+                await new Promise(resolve => setTimeout(resolve, 10000));
             }
-
-             if (!response.ok) {
-                console.error("Error response from backend:", response.status);
-                setEstimatedTime(prev => ({ ...prev, displayLoading: false, mapRouteLoading: false, error: { general: "Error occurred while fetching data." } }));
-                return;
-            }
+            // If response not ok, log it and try again
+            const errorMessage = `Failed to fetch route: ${response?.status} ${response?.statusText}`;
+            log.error(errorMessage, new Error(errorMessage));
+            throw new Error(errorMessage);
         }
         catch (error) {
-            console.error("Error during API call:", error);
-            setEstimatedTime(prev => ({ ...prev, displayLoading: false, mapRouteLoading: false, error: { general: "unknown error occurred" } }));
-        }
-    }
-
-    //  Function to fetch travel time data from backend API
-    const receiveTimeFromBackend = async (backendUrl: string, dataToReceive: Record<string, string>): Promise<void> => {
-        try {
-            const queryString = new URLSearchParams(dataToReceive).toString();
-            const fullUrl = `${backendUrl}?${queryString}`;
-
-            const response = await fetch(fullUrl, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
-
-            if (response.ok) {
-                const responseData = await response.json();
-                console.log("Received data from backend:", responseData);
-                
-                // Convert total minutes to hours and minutes
-                const totalMinutes = responseData.travelTimeMinutes || 0;
-                const hours = Math.floor(totalMinutes / 60);
-                const minutes = Math.floor(totalMinutes % 60);
-                
-                // Update state with received data as needed
-                setEstimatedTime(prev => ({ 
-                    ...prev, 
-                    hours: hours,
-                    minutes: minutes,
-                    displayLoading: false,
-                    mapRouteLoading: false,
-                    error: null
-                }));
-                return;
-            }
-
-            if (!response.ok) {
-                console.error("Error response from backend:", response.status);
-                setEstimatedTime(prev => ({ ...prev, displayLoading: false, mapRouteLoading: false, error: { general: "Error occurred while fetching data." } }));
-                return;
-            }
-        }
-        catch (error) {
-            console.error("Error during API call:", error);
-            setEstimatedTime(prev => ({ ...prev, displayLoading: false, mapRouteLoading: false, error: { general: "unknown error occurred" } }));
+            setEstimatedTime(prev => ({ 
+                ...prev, 
+                displayLoading: false, 
+                mapRouteLoading: false, 
+                error: { general: "An error occured while fetching data from backend." } 
+            }));
+            throw error;
         }
     }
 
@@ -244,47 +231,48 @@ export default function Group3Page() {
         }
 
         // Proceed with calculation if validation passes - Loading state
-        setEstimatedTime(prev => ({ ...prev, displayLoading: true, mapRouteLoading: true, error: null }));
+        setEstimatedTime(prev => ({ 
+            ...prev, 
+            displayLoading: true, 
+            mapRouteLoading: true, 
+            error: null 
+        }));
 
-        // Backend API calls
-    
-        const correlationId = crypto.randomUUID();
-
-        // Prepare JSON data for backend, matching the C# CreateProcessRequest
-        const requestData = {
-            Origin: origin,
-            Destination: destination,
-            TimeOfTravel: timeOfTravel,
-            modelVersion: modelVersion,
-            CorrelationId: correlationId
-        };
-
+        // BACKEND COMMUNICATION
         try {
-            if (requestData.Origin === null || requestData === undefined) {
-                throw new Error("Request data is null or undefined");
-            }
+            // Generate a unique correlation ID for the request
+            const correlationId = crypto.randomUUID();
 
+            // Prepare JSON data for backend, matching the C# CreateProcessRequest
+            const requestData = {
+                    Origin: origin,
+                    Destination: destination,
+                    TimeOfTravel: timeOfTravel,
+                    modelVersion: modelVersion,
+                    CorrelationId: correlationId
+                };
 
+            // Change the URLs to fit actual location when server is setup
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || '/translator'; // Delete fallback when deployed
+            const backendUrlPost = `${baseUrl}/api/processes`;
+            const backendUrlGet = `${baseUrl}/api/route?correlationId=${correlationId}`;
+
+            // Send data to backend - function handles errors and updates state
+            await sendDataToBackend(backendUrlPost, requestData);
+            log.info("Data sent to backend.");
+
+            await receiveDataFromBackend(backendUrlGet, { CorrelationId: correlationId });
+            log.info("Data received from backend.");    
         }
-        catch {
-            // Validation error - continue with request
+        catch (error) {
+            setEstimatedTime(prev => ({ 
+                ...prev, 
+                displayLoading: false, 
+                mapRouteLoading: false, 
+                error: { general: "An error occurred during calculation." } 
+            }));
         }
-
-
-        // Change the URLs to fit actual location
-        const backendUrlPost = "http://localhost:5000/api/processes";
-        const backendUrlFetchTime = `http://localhost:5000/api/GetTravelTimeEndpoint/${correlationId}`;
-        const backendUrlGetRoute = `http://localhost:5000/api/route?correlationId=${correlationId}`;
-
-        // Send data to backend - function handles errors and updates state
-        await sendDataToBackend(backendUrlPost, requestData);
-        // Wait for 5 seconds before fetching the result
-        await new Promise(resolve => setTimeout(resolve, 60000));
-        await receiveRouteFromBackend(backendUrlGetRoute);
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        await receiveTimeFromBackend(backendUrlFetchTime, { CorrelationId: correlationId });
-
-      };
+    };
      
     return (
         <div className="font-sans">

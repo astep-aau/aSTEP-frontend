@@ -7,4 +7,4 @@ This is the documentation for collaborative work done across multiple aSTEP grou
 
 ## Frontend Overview
 
-- Read [Frontend Overview](/cross-group/frontend/)
+- Read [Trajectory Group Shared Frontend Overview](/cross-group/frontend/)

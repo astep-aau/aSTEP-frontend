@@ -19,7 +19,8 @@ export const log = {
                     message: typeof error === 'string' ? error : JSON.stringify(error),
                 };
 
-                await fetch('http://localhost:5000/api/logs/frontend', {
+                const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://translator-service.cs-25-sw-5-03.svc.cluster.local/'; // Delete fallback when deployed
+                await fetch(`${baseUrl}/api/logs/frontend`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

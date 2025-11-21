@@ -16,6 +16,7 @@ export default defineConfig({
           items: [
             // Each item here is one entry in the navigation menu.
             { label: 'Overview', slug: 'cross-group' },
+            { label: 'Frontend', slug: 'cross-group/frontend' },
           ],
         },
         {

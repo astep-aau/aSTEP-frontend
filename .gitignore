@@ -4,3 +4,4 @@ public/docs
 docs/node_modules
 docs/dist
 .idea
+.env*

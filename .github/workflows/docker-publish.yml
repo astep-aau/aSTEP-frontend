@@ -50,18 +50,17 @@ jobs:
 
       - name: Inject Secrets as Env Vars
         env:
-          SECRETS_CONTEXT: ${{ toJSON(secrets) }}
+          # Add your FRONTEND_* secrets here (one per line)
+          FRONTEND_TEST: ${{ secrets.FRONTEND_TEST }}
+
         run: |
-          PREFIX="FRONTEND_"
+          ENV_ARGS=""
+          for var in $(env | grep '^FRONTEND_' | cut -d= -f1); do
+            ENV_ARGS="$ENV_ARGS ${var}=${!var}"
+          done
 
-          ENV_ARGS=$(echo "$SECRETS_CONTEXT" | jq -r --arg prefix "$PREFIX" 'to_entries | map(select(.key | startswith($prefix))) | map("\(.key)=\(.value)") | join(" ")')
+          kubectl set env deployment/frontend -n main $ENV_ARGS
 
-          if [ -z "$ENV_ARGS" ]; then
-            echo "No secrets found starting with $PREFIX"
-          else
-            echo "Found secrets. Updating Kubernetes deployment..."
-            kubectl set env deployment/frontend -n main $ENV_ARGS
-          fi
       - name: Rollout restart deployment
         run: |
           kubectl rollout restart deployment/frontend -n main

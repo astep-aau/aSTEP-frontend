@@ -60,7 +60,7 @@ jobs:
           done
 
           kubectl set env deployment/frontend -n main $ENV_ARGS
-
+          
       - name: Rollout restart deployment
         run: |
           kubectl rollout restart deployment/frontend -n main

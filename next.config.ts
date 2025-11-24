@@ -1,3 +1,4 @@
+process.env.CSS_TRANSFORMER_WASM = "1";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {

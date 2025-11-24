@@ -1,20 +1,15 @@
 "use client";
 
 import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
-// Define the type for the possible pages
-type Page = 'MyDatasetPage' | 'UploadPage' | 'AnalysisPage';
-
-interface NavbarProps {
-    activePage: Page;
-    setActivePage: (page: Page) => void;
-}
-
-export default function Navbar({ activePage, setActivePage }: NavbarProps) {
-    const navItems: { name: string; component: Page }[] = [
-        { name: 'My Dataset', component: 'MyDatasetPage' },
-        { name: 'Upload Data', component: 'UploadPage' },
-        { name: 'Run Analysis', component: 'AnalysisPage' },
+export default function Navbar() {
+    const pathname = usePathname();
+    
+    const navItems = [
+        { name: 'My Dataset', href: '/group9/MyDataset' },
+        { name: 'Upload Data', href: '/group9/Upload' },
     ];
 
     const inactiveClass = "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white transition-colors duration-150";
@@ -30,15 +25,15 @@ export default function Navbar({ activePage, setActivePage }: NavbarProps) {
                         {/* Navigation Links */}
                         <div className="hidden sm:flex space-x-6">
                             {navItems.map((item) => (
-                                <button
-                                    key={item.component}
-                                    onClick={() => setActivePage(item.component)}
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
                                     className={`py-2 text-lg focus:outline-none ${
-                                        activePage === item.component ? activeClass : inactiveClass
+                                        pathname === item.href ? activeClass : inactiveClass
                                     }`}
                                 >
                                     {item.name}
-                                </button>
+                                </Link>
                             ))}
                         </div>
                     </div>

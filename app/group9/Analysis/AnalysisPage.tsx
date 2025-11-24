@@ -1,8 +1,19 @@
-// AnalysisPage.js
+"use client";
+
+import { useParams } from 'next/navigation';
+
 export default function AnalysisPage() {
+    const params = useParams();
+    const datasetId = params?.id as string;
+
 return (
     <div className="bg-gray-100 dark:bg-black min-h-screen"> 
         <div className="container mx-auto px-6 py-8 max-w-6xl">
+            {datasetId && (
+                <h1 className="text-3xl font-semibold mb-6 text-gray-900 dark:text-white">
+                    Analysis for: {datasetId}
+                </h1>
+            )}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
                 <div className="lg:col-span-1 flex flex-col gap-8">
 

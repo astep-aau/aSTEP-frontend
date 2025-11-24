@@ -9,7 +9,7 @@ export default function Navbar() {
     const pathname = usePathname();
     
     const navItems = [
-        { name: 'My Dataset', href: '/group9/MyDataset' },
+        { name: 'My Datasets', href: '/group9/MyDataset' },
         { name: 'Upload Data', href: '/group9/Upload' },
     ];
 

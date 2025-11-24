@@ -3,11 +3,11 @@ title: Training Service
 description: Training-service workflows and API
 ---
 
-## 1. Purpose
+## Purpose
 
 Create training datasets, obtain edge feature vectors and traversal times, and run LSTM model training for travel-time estimation. The C# side orchestrates the flow and calls a local Python service that performs dataset generation, vector lookup, time calculation and model training.
 
-## 2. Explanation
+## Explanation
 
 - Entry point: C# controller / `TrainingService` triggers the end-to-end flow (route generation → time calculation → vector lookup → assemble TrainingSet → train LSTM).
 - Python exposes lightweight HTTP endpoints used by C# (FastAPI in `Python/Controller/PythonController.py`).

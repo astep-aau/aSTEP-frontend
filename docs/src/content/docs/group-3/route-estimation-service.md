@@ -349,7 +349,7 @@ openSet.Enqueue(originNodeId, fScore[originNodeId]);
 ```
 
 - The heuristic (straight-line Haversine distance) is admissible and consistent, meaning it never overestimates the remaining distance and satisfies the triangle inequality.
-- This ensures A* explores the minimum number of nodes necessary to find the optimal route, making it significantly faster than Dijkstra's algorithm for single-pair shortest path queries.
+- This ensures A* explores the minimum number of nodes necessary to find the optimal route, making it significantly faster than Dijkstra's algorithm for single-pair, shortest path queries.
 - One-way edge enforcement occurs during neighbor exploration: backward traversal is skipped when `edge.Oneway == true`, preventing illegal route segments.
 
 ```csharp

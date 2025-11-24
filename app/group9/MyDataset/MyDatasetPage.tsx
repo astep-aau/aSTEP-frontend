@@ -1,26 +1,57 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 
-// Define the interface for the dataset object
+// Define the interface for the dataset object from your backend
 interface Dataset {
     id: number;
     name: string;
-    uploaded: string;
-    size: string;
+    num_entries: number;
+    start_date: string | null;
 }
 
 export default function MyDatasetPage() {
+    const [datasets, setDatasets] = useState<Dataset[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    const datasets: Dataset[] = [
-        { id: 1, name: 'Aalborg Power Consumption', uploaded: '2025-10-20', size: '1.2 MB' },
-        { id: 2, name: 'Traffic Speeds', uploaded: '2025-10-20', size: '1.2 MB' },
-    ];
+    useEffect(() => {
+        fetchDatasets();
+    }, []);
+
+    const fetchDatasets = async () => {
+        try {
+            setIsLoading(true);
+            const response = await fetch('http://127.0.0.1:8000/datasets');
+            
+            if (!response.ok) {
+                throw new Error(`Failed to fetch datasets: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            setDatasets(data.datasets);
+            setError(null);
+        } catch (err) {
+            console.error('Error fetching datasets:', err);
+            setError(err instanceof Error ? err.message : 'Failed to load datasets');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const formatDate = (dateString: string | null) => {
+        if (!dateString) return 'N/A';
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    };
 
     return (
         <div className="min-h-screen bg-background">
@@ -44,13 +75,31 @@ export default function MyDatasetPage() {
                     </CardHeader>
                     <Separator />
                     <CardContent className="space-y-4 pt-6">
-                        {datasets.map((dataset) => (
+                        {isLoading && (
+                            <div className="text-center py-8 text-muted-foreground">
+                                Loading datasets...
+                            </div>
+                        )}
+                        
+                        {error && (
+                            <div className="text-center py-8 text-destructive">
+                                Error: {error}
+                            </div>
+                        )}
+                        
+                        {!isLoading && !error && datasets.length === 0 && (
+                            <div className="text-center py-8 text-muted-foreground">
+                                No datasets found. Upload your first dataset to get started!
+                            </div>
+                        )}
+                        
+                        {!isLoading && !error && datasets.map((dataset) => (
                             <Card key={dataset.id} className="shadow-none">
                                 <CardContent className="flex items-center justify-between p-4">
                                     <div>
                                         <p className="text-lg font-medium">{dataset.name}</p>
                                         <p className="text-sm text-muted-foreground">
-                                            ID: {dataset.id} • Uploaded: {dataset.uploaded} • Size: {dataset.size}
+                                            Start Date: {formatDate(dataset.start_date)} • Entries: {dataset.num_entries}
                                         </p>
                                     </div>
                                     <div className="flex gap-3">

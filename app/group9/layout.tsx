@@ -6,7 +6,7 @@ export default function Group9Layout({
     children: React.ReactNode;
 }) {
     return (
-        <div className="bg-white dark:bg-black min-h-screen">
+        <div className="bg-background min-h-screen">
             <Navbar />
             <main>{children}</main>
         </div>

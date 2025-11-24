@@ -1,69 +1,237 @@
 // UploadPage.js
 "use client";
 
-import React from 'react';
-import { Upload } from 'lucide-react';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Upload, X } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
 
 export default function UploadPage() {
-return (
-    <div className="min-h-screen bg-gray-100 dark:bg-black text-gray-900 dark:text-white">
-    <div className="container mx-auto px-6 py-8 max-w-6xl">
+  const router = useRouter();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [datasetName, setDatasetName] = useState<string>('');
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleFileSelect = (file: File) => {
+    if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+      setSelectedFile(file);
+    } else {
+      alert('Please select a CSV file');
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      handleFileSelect(files[0]);
+    }
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleFileSelect(e.target.files[0]);
+    }
+  };
+
+  const handleUpload = async () => {
+  if (!selectedFile) {
+    alert('Please select a file first');
+    return;
+  }
+  if (!datasetName.trim()) {
+    alert('Please enter a name for the dataset');
+    return;
+  }
+  if (datasetName.trim().length < 3) {
+    alert('Dataset name must be at least 3 characters');
+    return;
+  }
+  if (datasetName.trim().length > 25) {
+    alert('Dataset name must not exceed 25 characters');
+    return;
+  }
+  
+  setIsUploading(true);
+  
+  try {
+    // Read the file as text
+    const csvText = await selectedFile.text();
+    
+    // Send name as query parameter and CSV as raw body
+    const response = await fetch(
+      `http://127.0.0.1:8000/datasets?name=${encodeURIComponent(datasetName.trim())}&start_date=${new Date().toISOString()}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/csv',
+        },
+        body: csvText,
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || `Upload failed: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('Upload successful:', data);
+    
+    setSelectedFile(null);
+    setDatasetName('');
+    setIsUploading(false);
+    router.push('/group9/MyDataset');
+  } catch (error) {
+    console.error('Upload failed:', error);
+    alert(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    setIsUploading(false);
+  }
+};
+
+  const clearFile = () => {
+    setSelectedFile(null);
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-6 py-8 max-w-6xl">
         <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Group 9: Data Analysis Pipeline UI</h1>
-        <p className="text-lg text-gray-500 dark:text-gray-400">
-            Interface for uploading time series data and configuring analysis tasks.
-        </p>
+          <h1 className="text-3xl font-semibold mb-2">Upload Data</h1>
+          <p className="text-muted-foreground">
+            Upload time series data for analysis
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
-        
-            <div className="lg:col-span-2 flex flex-col gap-8">
-            
-            {/* 1. Upload Data Panel */}
-            <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800">
-                <h2 className="text-2xl font-semibold mb-6 border-b border-gray-200 dark:border-gray-700 pb-3 text-gray-800 dark:text-white">Upload Data File</h2>
+          <div className="lg:col-span-2 flex flex-col gap-8">
+            {/* Upload Data Panel */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Upload CSV File</CardTitle>
+                <CardDescription>Select a file to upload</CardDescription>
+              </CardHeader>
+              <Separator />
+              <CardContent className="pt-3 space-y-4">
+                {/* Dataset Name Input - shows when file is selected */}
+                {selectedFile && (
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium block mb-3">Name</label>
+                    <Input
+                      type="text"
+                      placeholder="Enter a name for your dataset"
+                      value={datasetName}
+                      onChange={(e) => setDatasetName(e.target.value.slice(0, 25))}
+                      minLength={3}
+                      maxLength={25}
+                      disabled={isUploading}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {datasetName.length}/25 characters - minimum 3 required
+                    </p>
+                  </div>
+                )}
 
-              {/* Drag & Drop Area */}
-                <div className="h-64 flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-700 hover:border-blue-500 transition-colors duration-200 cursor-pointer">
-                <Upload size={48} className="text-gray-400 dark:text-gray-600 mb-3" />
-                <p className="text-lg font-medium text-gray-800 dark:text-white mb-2">
-                Drag & Drop your CSV file here
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">or</p>
-                <input type="file" id="file-input" accept=".csv" className="hidden" />
-                <label 
-                htmlFor="file-input"
-                className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-150 transform hover:scale-[1.02] cursor-pointer"
+                {/* Selected File Display */}
+                {selectedFile && (
+                  <div className="bg-primary/5 border border-primary rounded-lg p-4 flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <Upload size={20} className="text-primary" />
+                      <div>
+                        <p className="font-medium text-foreground">{selectedFile.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {(selectedFile.size / 1024).toFixed(2)} KB
+                        </p>
+                      </div>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={clearFile}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <X size={20} />
+                    </Button>
+                  </div>
+                )}
+
+                {/* Drag & Drop Area */}
+                {!selectedFile && (
+                  <div 
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    className={`h-64 flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg transition-colors duration-200 cursor-pointer ${
+                      isDragging ? 'border-primary bg-primary/5' : 'border-border hover:border-primary'
+                    }`}
+                  >
+                    <Upload size={48} className="text-muted-foreground mb-3" />
+                    <p className="text-lg font-medium text-foreground mb-2">
+                      Drag & Drop your CSV file here
+                    </p>
+                    <p className="text-sm text-muted-foreground mb-4">or</p>
+                    <input 
+                      type="file" 
+                      id="file-input" 
+                      accept=".csv" 
+                      className="hidden"
+                      onChange={handleFileInputChange}
+                    />
+                    <Button asChild>
+                      <label htmlFor="file-input" className="cursor-pointer">
+                        Browse Files
+                      </label>
+                    </Button>
+                    <p className="mt-2 text-xs text-muted-foreground">Supports: CSV (Comma Separated Values)</p>
+                  </div>
+                )}
+
+                {/* Upload Button */}
+                <Button 
+                  onClick={handleUpload}
+                  disabled={!selectedFile || isUploading}
+                  className="w-full"
                 >
-                Browse Files
-                </label>
-                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">Supports: CSV (Comma Separated Values)</p>
-            </div>
-            
-              {/* Static Upload Button */}
-            <button
-                disabled
-                className="w-full mt-6 py-3 px-4 font-bold rounded-xl text-white bg-green-600 opacity-75 cursor-not-allowed shadow-md hover:bg-green-500"
-            >
-                Start Data Upload
-            </button>
-            </div>
+                  {isUploading ? 'Uploading...' : selectedFile ? 'Upload' : 'Select a file to upload'}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Upload Guidelines Card (Sidebar) */}
+          <div className="hidden lg:block">
+            <Card className="h-fit">
+              <CardHeader>
+                <CardTitle>Data Guidelines</CardTitle>
+              </CardHeader>
+              <Separator />
+              <CardContent className="pt-6">
+                <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
+                  <li>File format <span className="font-semibold text-foreground">must</span> be CSV.</li>
+                  <li>Data should be structured as a time series.</li>
+                  <li>The first column should contain date/time stamps.</li>
+                  <li>Maximum file size is 50MB.</li>
+                  <li>All values should be numerical (except the timestamp).</li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-        {/* Upload Guidelines Card (Sidebar) */}
-        <div className="hidden lg:block">
-            <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 h-fit">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Data Guidelines</h2>
-            <ul className="list-disc list-inside space-y-2 text-sm text-gray-600 dark:text-gray-300">
-                <li>File format **must** be CSV.</li>
-                <li>Data should be structured as a time series.</li>
-                <li>The first column should contain date/time stamps.</li>
-                <li>Maximum file size is 50MB.</li>
-                <li>All values should be numerical (except the timestamp).</li>
-            </ul>
-            </div>
-        </div>
+      </div>
     </div>
-    </div>
-    </div>
-);
+  );
 }

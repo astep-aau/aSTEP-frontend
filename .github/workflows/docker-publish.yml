@@ -52,13 +52,27 @@ jobs:
         env:
           # Add your FRONTEND_* secrets here (one per line)
           FRONTEND_TEST: ${{ secrets.FRONTEND_TEST }}
-
         run: |
+          echo "Checking FRONTEND_* environment variables..."
+          env | grep '^FRONTEND_' || echo "No FRONTEND_* variables found in environment"
+
           ENV_ARGS=""
           for var in $(env | grep '^FRONTEND_' | cut -d= -f1); do
-            ENV_ARGS="$ENV_ARGS ${var}=${!var}"
+            value="${!var}"
+            if [ -z "$value" ]; then
+              echo "WARNING: $var is empty or not set!"
+            else
+              echo "Found $var with value (length: ${#value} characters)"
+            fi
+            ENV_ARGS="$ENV_ARGS ${var}=${value}"
           done
 
+          if [ -z "$ENV_ARGS" ]; then
+            echo "ERROR: No FRONTEND_* secrets to inject"
+            exit 1
+          fi
+
+          echo "Updating deployment with environment variables..."
           kubectl set env deployment/frontend -n main $ENV_ARGS
 
       - name: Rollout restart deployment

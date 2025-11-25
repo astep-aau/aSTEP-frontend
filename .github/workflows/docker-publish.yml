@@ -55,7 +55,7 @@ jobs:
 
         run: |
           ENV_ARGS=""
-          for var in $(env | grep '^FRONTEND_' | cut -d= -f1); do
+          for var in $(cat .env | grep '^FRONTEND_' | cut -d= -f1); do
             ENV_ARGS="$ENV_ARGS ${var}=${!var}"
           done
 

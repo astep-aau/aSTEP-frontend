@@ -54,9 +54,9 @@ jobs:
       - name: Inject Secrets as Env Vars
         run: |
           ENV_ARGS=""
-          for var in $(cat .env | grep '^FRONTEND_' | cut -d= -f1); do
-            ENV_ARGS="$ENV_ARGS ${var}=${!var}"
-          done
+          while IFS='=' read -r key value; do
+              ENV_ARGS="$ENV_ARGS $key=$value"
+          done < <(grep '^FRONTEND_' KUBE_ENV)
 
           kubectl set env deployment/frontend -n main $ENV_ARGS
           

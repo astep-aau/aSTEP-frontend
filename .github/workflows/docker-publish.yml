@@ -56,7 +56,7 @@ jobs:
           ENV_ARGS=""
           while IFS='=' read -r key value; do
               ENV_ARGS="$ENV_ARGS $key=$value"
-          done < <(grep '^FRONTEND_' KUBE_ENV)
+          done < <(cat KUBE_ENV)
 
           kubectl set env deployment/frontend -n main $ENV_ARGS
           

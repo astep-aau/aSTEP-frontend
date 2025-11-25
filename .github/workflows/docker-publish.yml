@@ -48,11 +48,10 @@ jobs:
           kubectl auth whoami
           kubectl auth can-i update deployments -n main
 
-      - name: Inject Secrets as Env Vars
-        env:
-          # Add your FRONTEND_* secrets here (one per line)
-          FRONTEND_TEST: ${{ secrets.FRONTEND_TEST }}
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
+      - name: Inject Secrets as Env Vars
         run: |
           ENV_ARGS=""
           for var in $(cat .env | grep '^FRONTEND_' | cut -d= -f1); do

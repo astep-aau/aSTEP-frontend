@@ -2,7 +2,7 @@ name: Build and Deploy
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -40,18 +40,30 @@ jobs:
   deploy:
     needs: build-and-push
     runs-on: self-hosted
-    
+
     steps:
       - name: Check permissions
         run: |
           echo "Checking runner identity and permissions..."
           kubectl auth whoami
           kubectl auth can-i update deployments -n main
-        
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Inject Secrets as Env Vars
+        run: |
+          kubectl patch deployment/frontend -n main --type=json -p='[{"op": "remove", "path": "/spec/template/spec/containers/0/env"}]'
+          ENV_ARGS=""
+          while IFS='=' read -r key value; do
+              ENV_ARGS="$ENV_ARGS $key=$value"
+          done < <(cat KUBE_ENV)
+          kubectl set env deployment/frontend -n main $ENV_ARGS
+          
       - name: Rollout restart deployment
         run: |
           kubectl rollout restart deployment/frontend -n main
-          
+
       - name: Wait for rollout to complete
         run: |
           kubectl rollout status deployment/frontend -n main --timeout=5m

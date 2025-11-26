@@ -107,7 +107,7 @@ export default function MyDatasetPage() {
                                             View Details
                                         </Button>
                                         <Button asChild size="sm">
-                                            <Link href={`/group9/Analysis/${dataset.id}`}>
+                                            <Link href={`/group9/Analysis/${dataset.id}?name=${encodeURIComponent(dataset.name)}`}>
                                                 Run Analysis
                                             </Link>
                                         </Button>

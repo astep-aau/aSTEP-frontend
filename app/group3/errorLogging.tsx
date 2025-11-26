@@ -1,4 +1,5 @@
-const isDevelopment = process.env.NODE_ENV === 'development';
+//const isDevelopment = process.env.NODE_ENV === 'development';
+const isDevelopment = true;
 
 export const log = {
     info: (message: string, data?: object | string | number | boolean) => {

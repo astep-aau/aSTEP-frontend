@@ -305,30 +305,20 @@ app.MapHealthChecks("/health");
 | outward_vertices     | int[]      | Edge IDs terminating at this node             |
 | backward_vertices  | string[]   | Node IDs at the start of backward edges       |
 
-### edge_traversals.json
+### edge_traversals_lengths.csv
 
-```json
-{
-  "14312": {
-    "oneway": true,
-    "length (cm)": 35846,
-    "traversals": {
-      "0": {
-        "time to traverse (s)": 2.18
-      },
-      "1": {
-        "time to traverse (s)": 2.2
-      }
-    }
-  }
-}
+```csv
+edge_id,length_cm,oneway
+0,64798,True
+1,1883,True
+2,38595,True
 ```
 
-| Field       | Type    | Notes                                       |
-|-------------|---------|---------------------------------------------|
-| Length (cm) | double  | Edge length in centimeters                  |
-| Oneway      | bool    | `true` if edge allows only forward travel   |
-| Traversals  | object  | Time-to-traverse estimates by time-of-day   |
+| Field        | Type   | Notes                                     |
+|--------------|--------|-------------------------------------------|
+| edge_id (cm) | double | The ID of a specific edge                 |
+| length_cm    | double | Edge length in centimeters                |
+| oneway       | bool   | `true` if edge allows only forward travel |
 
 ## A* algorithm implementation details
 
@@ -349,7 +339,7 @@ openSet.Enqueue(originNodeId, fScore[originNodeId]);
 ```
 
 - The heuristic (straight-line Haversine distance) is admissible and consistent, meaning it never overestimates the remaining distance and satisfies the triangle inequality.
-- This ensures A* explores the minimum number of nodes necessary to find the optimal route, making it significantly faster than Dijkstra's algorithm for single-pair shortest path queries.
+- This ensures A* explores the minimum number of nodes necessary to find the optimal route, making it significantly faster than Dijkstra's algorithm for single-pair, shortest path queries.
 - One-way edge enforcement occurs during neighbor exploration: backward traversal is skipped when `edge.Oneway == true`, preventing illegal route segments.
 
 ```csharp

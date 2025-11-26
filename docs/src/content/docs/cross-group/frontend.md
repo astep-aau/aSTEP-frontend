@@ -7,12 +7,8 @@ description: Frontend documentation
 The purpose of the shared trajectory group frontend is to provide a baseline for the frontend that will be developed by each individual group. It was developed by group 3 but mutually agreed upon. Each individual group will have their own frontend implementation developed based on this, including their own backend communication logic.
 
 The shared frontend provides an intuitive user interface for travel time estimation in Harbin, China. The application allows users to input origin and destination coordinates, select a departure time, choose a model version, and view estimated travel time and distance along with a visual route on an interactive map. The frontend handles input validation, real-time feedback, and data visualization as a baseline that each group can extend.
-The purpose of the shared trajectory group frontend is to provide a baseline for the frontend that will be developed by each individual group. It was developed by group 3 but mutually agreed upon. Each individual group will have their own frontend implementation developed based on this, including their own backend communication logic.
-
-The shared frontend provides an intuitive user interface for travel time estimation in Harbin, China. The application allows users to input origin and destination coordinates, select a departure time, choose a model version, and view estimated travel time and distance along with a visual route on an interactive map. The frontend handles input validation, real-time feedback, and data visualization as a baseline that each group can extend.
 
 ## Explanation
-The frontend is built with Next.js 14, React, TypeScript, and Leaflet for map visualization. It follows a component-based architecture where the main page component (`page.tsx`) orchestrates state management and business logic, while specialized child components handle specific concerns like input forms, map visualization, and results display.
 The frontend is built with Next.js 14, React, TypeScript, and Leaflet for map visualization. It follows a component-based architecture where the main page component (`page.tsx`) orchestrates state management and business logic, while specialized child components handle specific concerns like input forms, map visualization, and results display.
 
 ## Architecture Overview
@@ -30,8 +26,6 @@ The frontend consists of the following key components:
 
 1. **User Input**: User enters coordinates, time, and model version in the InputPanel
 2. **Validation**: Frontend validates inputs (format, required fields)
-3. **Backend Communication**: Each group implements their own backend communication logic
-4. **Visualization**: Display results and render route on map
 3. **Backend Communication**: Each group implements their own backend communication logic
 4. **Visualization**: Display results and render route on map
 
@@ -67,7 +61,6 @@ const [routeData, setRouteData] = useState<[number, number][] | undefined>(undef
 const [activeMapPicker, setActiveMapPicker] = useState<'origin' | 'destination' | null>(null);
 ```
 
-## Workflow: User Input
 ## Workflow: User Input
 
 ### Input Handling
@@ -118,7 +111,6 @@ const handleMapClick = (lat: number, lon: number) => {
 ## Workflow: Validation
 
 The frontend performs comprehensive validation on user inputs:
-The frontend performs comprehensive validation on user inputs:
 
 ### Required Field Validation
 ```typescript
@@ -147,7 +139,6 @@ if (timeOfTravel && !timePattern.test(timeOfTravel)) {
 - If validation errors exist, they are stored in state and displayed in the Display component
 - Each error is shown with red text and appropriate field-specific messaging
 - The onSubmit function returns early if validation fails
-- The onSubmit function returns early if validation fails
 
 ## Component Details
 
@@ -162,7 +153,6 @@ if (timeOfTravel && !timePattern.test(timeOfTravel)) {
 - `parseCoordinate()`: Validates and parses coordinate strings
 - `handleOriginChange()` / `handleDestinationChange()`: Update input and parsed coordinate state
 - `handleMapClick()`: Processes map clicks for coordinate selection
-- `handleCalculate()`: Main calculation handler with validation (each group extends with their own backend communication)
 - `handleCalculate()`: Main calculation handler with validation (each group extends with their own backend communication)
 
 ### inputPanel.tsx - User Input Form

@@ -48,31 +48,16 @@ jobs:
           kubectl auth whoami
           kubectl auth can-i update deployments -n main
 
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Inject Secrets as Env Vars
-        env:
-          # Add your FRONTEND_* secrets here (one per line)
-          FRONTEND_TEST: ${{ secrets.FRONTEND_TEST }}
         run: |
-          echo "Checking FRONTEND_* environment variables..."
-          env | grep '^FRONTEND_' || echo "No FRONTEND_* variables found in environment"
-
+          kubectl patch deployment/frontend -n main --type=json -p='[{"op": "remove", "path": "/spec/template/spec/containers/0/env"}]'
           ENV_ARGS=""
-          for var in $(env | grep '^FRONTEND_' | cut -d= -f1); do
-            value="${!var}"
-            if [ -z "$value" ]; then
-              echo "WARNING: $var is empty or not set!"
-            else
-              echo "Found $var with value (length: ${#value} characters)"
-            fi
-            ENV_ARGS="$ENV_ARGS ${var}=${value}"
-          done
-
-          if [ -z "$ENV_ARGS" ]; then
-            echo "ERROR: No FRONTEND_* secrets to inject"
-            exit 1
-          fi
-
-          echo "Updating deployment with environment variables..."
+          while IFS='=' read -r key value; do
+              ENV_ARGS="$ENV_ARGS $key=$value"
+          done < <(cat KUBE_ENV)
           kubectl set env deployment/frontend -n main $ENV_ARGS
 
       - name: Rollout restart deployment

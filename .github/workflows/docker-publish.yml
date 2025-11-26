@@ -59,7 +59,7 @@ jobs:
               ENV_ARGS="$ENV_ARGS $key=$value"
           done < <(cat KUBE_ENV)
           kubectl set env deployment/frontend -n main $ENV_ARGS
-          
+
       - name: Rollout restart deployment
         run: |
           kubectl rollout restart deployment/frontend -n main

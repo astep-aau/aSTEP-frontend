@@ -13,7 +13,7 @@
  */
 
 import React from 'react';
-import { EstimatedTimeState } from "./page";
+import { EstimatedTimeState } from "./Group3Client";
 import { Loader2 } from "lucide-react";
 
 interface DisplayProps {

@@ -7,7 +7,7 @@
  */
 
 import React from "react"; 
-import { ParsedCoordinate } from "./page"; 
+import { ParsedCoordinate } from "./Group3Client"; 
 import { Loader2 } from "lucide-react";
 import { Map } from "./dynamicMap3";
 

@@ -119,6 +119,7 @@ export default function Group3Page({ backendUrl}: Group3ClientProps) {
     const sendDataToBackend = async (backendUrl: string, dataToSend: BackendRequestData ): Promise<void> => {
       try{
         log.info("Sending data to backend:", dataToSend);
+        log.info("This is the route/endoint", backendUrl);
         const response = await fetch(backendUrl, {
             method: 'POST',
             headers: {

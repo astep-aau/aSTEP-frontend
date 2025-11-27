@@ -6,7 +6,7 @@ interface RouteInfoCardProps {
   loading: boolean
   distance: number | null
   duration: number | null
-  timeType: 'start' | 'arrival'
+  timeType: 'departure' | 'arrival'
   selectedTime: string
 }
 
@@ -29,7 +29,7 @@ export function RouteInfoCard({ loading, distance, duration, timeType, selectedT
 
       const durationMinutes = Math.round(duration)
 
-      if (timeType === 'start') {
+      if (timeType === 'departure') {
         // Given departure time, calculate arrival
         const departureDate = new Date()
         departureDate.setHours(hours, minutes, 0, 0)

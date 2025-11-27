@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { TimePickerCard } from './time-picker-card'
 import { RouteInfoCard } from './route-info-card'
 import { LocationPicker } from './location-picker'
+import { fetchRoute as fetchRouteFromAPI, parseTimeString } from '../services/route-api'
 
 export { ServiceExample } from './service-example'
 
@@ -31,7 +32,9 @@ export function RoutePlanner({
   const [markerMode, setMarkerMode] = useState<'start' | 'end' | null>(null)
   const [startAddress, setStartAddress] = useState<string>('')
   const [endAddress, setEndAddress] = useState<string>('')
-  const [timeType, setTimeType] = useState<'start' | 'arrival'>('start')
+  const [startCoord, setStartCoord] = useState<[number, number] | null>(null)
+  const [endCoord, setEndCoord] = useState<[number, number] | null>(null)
+  const [timeType, setTimeType] = useState<'departure' | 'arrival'>('departure')
   const [selectedTime, setSelectedTime] = useState<string>('')
 
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,34 +101,67 @@ export function RoutePlanner({
     const address = await fetchAddress(position[0], position[1])
     if (type === 'start') {
       setStartAddress(address)
+      setStartCoord(position)
     } else {
       setEndAddress(address)
+      setEndCoord(position)
     }
     setMarkerMode(null) // Reset mode after placing marker
   }
 
-  const fetchRoute = async (start: [number, number], end: [number, number]) => {
-    setLoading(true)
-    try {
-      const response = await fetch(
-        `https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`
-      )
-      const data = await response.json()
-
-      if (data.code === 'Ok' && data.routes.length > 0) {
-        const coords = data.routes[0].geometry.coordinates.map(
-          (coord: [number, number]) => [coord[1], coord[0]] as [number, number]
-        )
-        setRoute(coords)
-        setDistance(data.routes[0].distance / 1000) // Convert to km
-        setDuration(data.routes[0].duration / 60) // Convert to minutes
+  // Auto-fetch route when all required parameters are set
+  useEffect(() => {
+    const fetchRouteAuto = async () => {
+      // Check if all required parameters are set
+      if (!startCoord || !endCoord || !selectedTime || selectedTime.length < 5) {
+        return
       }
-    } catch (error) {
-      console.error('Error fetching route:', error)
-    } finally {
-      setLoading(false)
+
+      setLoading(true)
+      try {
+        const timeConfig = parseTimeString(selectedTime)
+        if (!timeConfig) {
+          console.error('Invalid time format')
+          setLoading(false)
+          return
+        }
+
+        const timetype = timeType === 'departure' ? 'DEPARTURE' : 'ARRIVAL'
+
+        console.log('Auto-fetching route with:', {
+          start: startCoord,
+          end: endCoord,
+          timetype,
+          time: timeConfig
+        })
+
+        const data = await fetchRouteFromAPI({
+          start_coordinate: {
+            lat: startCoord[0],
+            lon: startCoord[1],
+          },
+          end_coordinate: {
+            lat: endCoord[0],
+            lon: endCoord[1],
+          },
+          timetype,
+          time: timeConfig,
+        })
+
+        console.log('Route data received:', data)
+
+        setRoute(data.linestring.coordinates)
+        setDistance(data.length)
+        setDuration(data.traversalTime)
+      } catch (error) {
+        console.error('Error fetching route:', error)
+      } finally {
+        setLoading(false)
+      }
     }
-  }
+
+    fetchRouteAuto()
+  }, [startCoord, endCoord, selectedTime, timeType])
 
   return (
     <div className="space-y-4">
@@ -134,7 +170,7 @@ export function RoutePlanner({
         <TimePickerCard
           timeType={timeType}
           selectedTime={selectedTime}
-          onTimeTypeChange={(value) => setTimeType(value as 'start' | 'arrival')}
+          onTimeTypeChange={(value) => setTimeType(value as 'departure' | 'arrival')}
           onTimeChange={handleTimeChange}
         />
 
@@ -162,7 +198,6 @@ export function RoutePlanner({
         className={className}
         markerMode={markerMode}
         route={route}
-        onRoute={fetchRoute}
         onMarkerSet={handleMarkerSet}
       />
     </div>

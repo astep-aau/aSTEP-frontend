@@ -16,12 +16,11 @@ L.Icon.Default.mergeOptions({
 })
 
 interface RouteHandlerProps {
-  onRoute: (start: [number, number], end: [number, number]) => void
   markerMode: 'start' | 'end' | null
   onMarkerSet: (type: 'start' | 'end', position: [number, number]) => void
 }
 
-function RouteHandler({ onRoute, markerMode, onMarkerSet }: RouteHandlerProps) {
+function RouteHandler({ markerMode, onMarkerSet }: RouteHandlerProps) {
   const [points, setPoints] = useState<{ start?: [number, number], end?: [number, number] }>({})
 
   useMapEvents({
@@ -33,11 +32,6 @@ function RouteHandler({ onRoute, markerMode, onMarkerSet }: RouteHandlerProps) {
       const updatedPoints = { ...points, [markerMode]: newPoint }
       setPoints(updatedPoints)
       onMarkerSet(markerMode, newPoint)
-
-      // If both points are set, fetch route
-      if (updatedPoints.start && updatedPoints.end) {
-        onRoute(updatedPoints.start, updatedPoints.end)
-      }
     },
   })
 
@@ -71,7 +65,6 @@ interface MapComponentProps {
   className?: string
   markerMode: 'start' | 'end' | null
   route: [number, number][]
-  onRoute: (start: [number, number], end: [number, number]) => void
   onMarkerSet: (type: 'start' | 'end', position: [number, number]) => void
 }
 
@@ -81,7 +74,6 @@ export function MapComponent({
   className = "h-96 w-full rounded-lg",
   markerMode,
   route,
-  onRoute,
   onMarkerSet
 }: MapComponentProps) {
   const { theme } = useTheme()
@@ -103,13 +95,13 @@ export function MapComponent({
           }
         />
 
-        <RouteHandler onRoute={onRoute} markerMode={markerMode} onMarkerSet={onMarkerSet} />
+        <RouteHandler markerMode={markerMode} onMarkerSet={onMarkerSet} />
 
         {route.length > 0 && (
           <Polyline
             positions={route}
             color="blue"
-            weight={4}
+            weight={8}
             opacity={0.7}
           />
         )}

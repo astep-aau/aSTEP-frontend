@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 
 interface TimePickerCardProps {
-  timeType: 'start' | 'arrival'
+  timeType: 'departure' | 'arrival'
   selectedTime: string
   onTimeTypeChange: (value: string) => void
   onTimeChange: (e: React.ChangeEvent<HTMLInputElement>) => void
@@ -26,10 +26,10 @@ export function TimePickerCard({
       <CardContent>
         <Tabs value={timeType} onValueChange={onTimeTypeChange} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="start">Departure</TabsTrigger>
+            <TabsTrigger value="departure">Departure</TabsTrigger>
             <TabsTrigger value="arrival">Arrival</TabsTrigger>
           </TabsList>
-          <TabsContent value="start" className="mt-4">
+          <TabsContent value="departure" className="mt-4">
             <div className="space-y-2">
               <Label htmlFor="departure-time">Time</Label>
               <Input

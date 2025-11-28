@@ -40,3 +40,7 @@ Group 3 is focusing on Travel Time Estimation and this is the documentation for 
 ## Training Service
 
 - Read [Training Service](/group-3/training-service/)
+
+## AI-Lab
+
+- Read [AI-Lab](/group3/aiLab/)

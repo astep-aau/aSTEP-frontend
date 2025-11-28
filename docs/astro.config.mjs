@@ -40,6 +40,7 @@ export default defineConfig({
             { label: 'Translator Service', slug: 'group-3/translator-service' },
             { label: 'Route Estimation Service', slug: 'group-3/route-estimation-service' },
             { label: 'Training Service', slug: 'group-3/training-service' },
+            { label: 'AI-Lab', slug: 'group-3/ailab' },
           ],
         },
         {

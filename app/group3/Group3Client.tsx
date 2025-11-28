@@ -176,8 +176,8 @@ export default function Group3Page({ backendUrl}: Group3ClientProps) {
                     setRouteData(route);
 
                     const totalMinutes = responseData.travelTimeMinutes || 0;
-                    const hours = Math.floor(totalMinutes / 60);
-                    const minutes = Math.floor(totalMinutes % 60);
+                    const hours = Math.floor(totalMinutes % 60);
+                    const minutes = Math.floor(totalMinutes);
                     setEstimatedTime(prev => ({
                         ...prev,
                         hours: hours,

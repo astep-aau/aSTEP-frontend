@@ -9,14 +9,6 @@ Group 3 is focusing on Travel Time Estimation and this is the documentation for 
 
 - Read [Project Architecture](/group-3/project-architecture/)
 
-## LSTM model overview
-
-- Read [LSTM Model](/group-3/lstm-model/)
-
-## Edge Embeddings
-
-- Read [Edge Embeddings](/group-3/edge-embeddings/)
-
 ## Frontend to Backend communication
 
 - Read [Frontend to Backend Communication](/group-3/frontend-backend-communication/)

@@ -62,24 +62,24 @@ export function Display({ time, error, loading }: DisplayProps) {
                         </div>
                     ) : time.hours !== null || time.distanceKm !== null ? (
                         /* Travel Time and Distance Display - shown when calculation completes */
-                        <div className="space-y-3">
+                        <>
                             {time.hours !== null && (
                                 <div>
-                                    <h3 className="text-xl font-bold mb-1">
+                                    <h3 className="text-xl font-semibold">
                                         {`${time.hours}h ${time.minutes ?? 0}m`}
                                     </h3>
-                                    <p className="text-sm italic">Time to traverse</p>
+                                    <p className="text-xs">Time to traverse</p>
                                 </div>
                             )}
                             {time.distanceKm !== null && (
                                 <div>
-                                    <p className="text-lg font-semibold">
+                                    <p className="text-xl font-semibold">
                                         {`${time.distanceKm.toFixed(2)} km`}
                                     </p>
                                     <p className="text-xs">Distance of route</p>
                                 </div>
                             )}
-                        </div>
+                        </>
                     ) : (
                         /* Placeholder Text - shown when no calculation has been done yet */
                         <p className="italic">Enter details and calculate to see travel time and distance.</p>

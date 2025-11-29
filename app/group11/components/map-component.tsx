@@ -18,9 +18,11 @@ L.Icon.Default.mergeOptions({
 interface RouteHandlerProps {
   markerMode: 'start' | 'end' | null
   onMarkerSet: (type: 'start' | 'end', position: [number, number]) => void
+  adjustedStartCoord?: [number, number] | null
+  adjustedEndCoord?: [number, number] | null
 }
 
-function RouteHandler({ markerMode, onMarkerSet }: RouteHandlerProps) {
+function RouteHandler({ markerMode, onMarkerSet, adjustedStartCoord, adjustedEndCoord }: RouteHandlerProps) {
   const [points, setPoints] = useState<{ start?: [number, number], end?: [number, number] }>({})
 
   useMapEvents({
@@ -35,22 +37,36 @@ function RouteHandler({ markerMode, onMarkerSet }: RouteHandlerProps) {
     },
   })
 
+  // Use adjusted coordinates if available, otherwise use clicked points
+  const displayStartCoord = adjustedStartCoord || points.start
+  const displayEndCoord = adjustedEndCoord || points.end
+
   return (
     <>
-      {points.start && (
-        <Marker position={points.start}>
+      {displayStartCoord && (
+        <Marker position={displayStartCoord}>
           <Popup>
             <div>
               <h3 className="font-semibold">Start Point</h3>
+              {adjustedStartCoord && (
+                <p className="text-xs text-gray-600 mt-1">
+                  Adjusted to nearest graph node
+                </p>
+              )}
             </div>
           </Popup>
         </Marker>
       )}
-      {points.end && (
-        <Marker position={points.end}>
+      {displayEndCoord && (
+        <Marker position={displayEndCoord}>
           <Popup>
             <div>
               <h3 className="font-semibold">End Point</h3>
+              {adjustedEndCoord && (
+                <p className="text-xs text-gray-600 mt-1">
+                  Adjusted to nearest graph node
+                </p>
+              )}
             </div>
           </Popup>
         </Marker>
@@ -66,6 +82,8 @@ interface MapComponentProps {
   markerMode: 'start' | 'end' | null
   route: [number, number][]
   onMarkerSet: (type: 'start' | 'end', position: [number, number]) => void
+  adjustedStartCoord?: [number, number] | null
+  adjustedEndCoord?: [number, number] | null
 }
 
 export function MapComponent({
@@ -74,7 +92,9 @@ export function MapComponent({
   className = "h-96 w-full rounded-lg",
   markerMode,
   route,
-  onMarkerSet
+  onMarkerSet,
+  adjustedStartCoord,
+  adjustedEndCoord
 }: MapComponentProps) {
   const { theme } = useTheme()
 
@@ -95,7 +115,12 @@ export function MapComponent({
           }
         />
 
-        <RouteHandler markerMode={markerMode} onMarkerSet={onMarkerSet} />
+        <RouteHandler
+          markerMode={markerMode}
+          onMarkerSet={onMarkerSet}
+          adjustedStartCoord={adjustedStartCoord}
+          adjustedEndCoord={adjustedEndCoord}
+        />
 
         {route.length > 0 && (
           <Polyline

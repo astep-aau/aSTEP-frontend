@@ -34,6 +34,8 @@ export function RoutePlanner({
   const [endAddress, setEndAddress] = useState<string>('')
   const [startCoord, setStartCoord] = useState<[number, number] | null>(null)
   const [endCoord, setEndCoord] = useState<[number, number] | null>(null)
+  const [adjustedStartCoord, setAdjustedStartCoord] = useState<[number, number] | null>(null)
+  const [adjustedEndCoord, setAdjustedEndCoord] = useState<[number, number] | null>(null)
   const [timeType, setTimeType] = useState<'departure' | 'arrival'>('departure')
   const [selectedTime, setSelectedTime] = useState<string>('')
 
@@ -153,6 +155,22 @@ export function RoutePlanner({
         setRoute(data.linestring.coordinates)
         setDistance(data.length)
         setDuration(data.traversalTime)
+
+        // Update adjusted coordinates from the backend response
+        if (data.adjusted_nodes) {
+          const adjustedStart: [number, number] = [data.adjusted_nodes.start_node.lat, data.adjusted_nodes.start_node.lon]
+          const adjustedEnd: [number, number] = [data.adjusted_nodes.end_node.lat, data.adjusted_nodes.end_node.lon]
+
+          setAdjustedStartCoord(adjustedStart)
+          setAdjustedEndCoord(adjustedEnd)
+
+          // Fetch and update addresses for the adjusted coordinates
+          const adjustedStartAddress = await fetchAddress(adjustedStart[0], adjustedStart[1])
+          const adjustedEndAddress = await fetchAddress(adjustedEnd[0], adjustedEnd[1])
+
+          setStartAddress(adjustedStartAddress)
+          setEndAddress(adjustedEndAddress)
+        }
       } catch (error) {
         console.error('Error fetching route:', error)
       } finally {
@@ -199,6 +217,8 @@ export function RoutePlanner({
         markerMode={markerMode}
         route={route}
         onMarkerSet={handleMarkerSet}
+        adjustedStartCoord={adjustedStartCoord}
+        adjustedEndCoord={adjustedEndCoord}
       />
     </div>
   )

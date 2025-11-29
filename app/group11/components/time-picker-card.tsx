@@ -26,8 +26,8 @@ export function TimePickerCard({
       <CardContent>
         <Tabs value={timeType} onValueChange={onTimeTypeChange} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="departure">Departure</TabsTrigger>
-            <TabsTrigger value="arrival">Arrival</TabsTrigger>
+            <TabsTrigger value="departure" className="cursor-pointer">Departure</TabsTrigger>
+            <TabsTrigger value="arrival" disabled className="cursor-not-allowed">Arrival</TabsTrigger>
           </TabsList>
           <TabsContent value="departure" className="mt-4">
             <div className="space-y-2">

@@ -1,8 +1,8 @@
 'use client'
 
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents, Polyline } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import L from 'leaflet'
 import { useTheme } from 'next-themes'
 import styles from './map.module.css'
@@ -24,18 +24,35 @@ interface RouteHandlerProps {
 
 function RouteHandler({ markerMode, onMarkerSet, adjustedStartCoord, adjustedEndCoord }: RouteHandlerProps) {
   const [points, setPoints] = useState<{ start?: [number, number], end?: [number, number] }>({})
+  const map = useMap()
+  const markerModeRef = useRef(markerMode)
+  const onMarkerSetRef = useRef(onMarkerSet)
 
-  useMapEvents({
-    click: (e) => {
-      if (!markerMode) return
+  // Keep refs up to date
+  useEffect(() => {
+    markerModeRef.current = markerMode
+    onMarkerSetRef.current = onMarkerSet
+  }, [markerMode, onMarkerSet])
+
+  // Set up click handler with proper cleanup
+  useEffect(() => {
+    const handleClick = (e: L.LeafletMouseEvent) => {
+      if (!markerModeRef.current) return
 
       const newPoint: [number, number] = [e.latlng.lat, e.latlng.lng]
 
-      const updatedPoints = { ...points, [markerMode]: newPoint }
-      setPoints(updatedPoints)
-      onMarkerSet(markerMode, newPoint)
-    },
-  })
+      setPoints(prev => ({ ...prev, [markerModeRef.current!]: newPoint }))
+      onMarkerSetRef.current(markerModeRef.current, newPoint)
+    }
+
+    // Add event listener
+    map.on('click', handleClick)
+
+    // Cleanup function - removes the event listener
+    return () => {
+      map.off('click', handleClick)
+    }
+  }, [map]) // Only re-run if map instance changes
 
   // Use adjusted coordinates if available, otherwise use clicked points
   const displayStartCoord = adjustedStartCoord || points.start

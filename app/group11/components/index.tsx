@@ -39,6 +39,9 @@ export function RoutePlanner({
   const [timeType, setTimeType] = useState<'departure' | 'arrival'>('departure')
   const [selectedTime, setSelectedTime] = useState<string>('')
 
+  // Toggle to use linestring endpoints instead of adjusted coordinates
+  const useLinestringCoordinates = true
+
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value
 
@@ -217,8 +220,16 @@ export function RoutePlanner({
         markerMode={markerMode}
         route={route}
         onMarkerSet={handleMarkerSet}
-        adjustedStartCoord={adjustedStartCoord}
-        adjustedEndCoord={adjustedEndCoord}
+        adjustedStartCoord={
+          useLinestringCoordinates && route.length > 0
+            ? route[0]
+            : adjustedStartCoord
+        }
+        adjustedEndCoord={
+          useLinestringCoordinates && route.length > 0
+            ? route[route.length - 1]
+            : adjustedEndCoord
+        }
       />
     </div>
   )

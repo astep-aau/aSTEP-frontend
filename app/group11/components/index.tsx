@@ -34,13 +34,8 @@ export function RoutePlanner({
   const [endAddress, setEndAddress] = useState<string>('')
   const [startCoord, setStartCoord] = useState<[number, number] | null>(null)
   const [endCoord, setEndCoord] = useState<[number, number] | null>(null)
-  const [adjustedStartCoord, setAdjustedStartCoord] = useState<[number, number] | null>(null)
-  const [adjustedEndCoord, setAdjustedEndCoord] = useState<[number, number] | null>(null)
   const [timeType, setTimeType] = useState<'departure' | 'arrival'>('departure')
   const [selectedTime, setSelectedTime] = useState<string>('')
-
-  // Toggle to use linestring endpoints instead of adjusted coordinates
-  const useLinestringCoordinates = true
 
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value
@@ -159,17 +154,14 @@ export function RoutePlanner({
         setDistance(data.length)
         setDuration(data.traversalTime)
 
-        // Update adjusted coordinates from the backend response
-        if (data.adjusted_nodes) {
-          const adjustedStart: [number, number] = [data.adjusted_nodes.start_node.lat, data.adjusted_nodes.start_node.lon]
-          const adjustedEnd: [number, number] = [data.adjusted_nodes.end_node.lat, data.adjusted_nodes.end_node.lon]
+        // Use linestring endpoints as the adjusted coordinates
+        if (data.linestring.coordinates.length > 0) {
+          const routeStart = data.linestring.coordinates[0]
+          const routeEnd = data.linestring.coordinates[data.linestring.coordinates.length - 1]
 
-          setAdjustedStartCoord(adjustedStart)
-          setAdjustedEndCoord(adjustedEnd)
-
-          // Fetch and update addresses for the adjusted coordinates
-          const adjustedStartAddress = await fetchAddress(adjustedStart[0], adjustedStart[1])
-          const adjustedEndAddress = await fetchAddress(adjustedEnd[0], adjustedEnd[1])
+          // Fetch and update addresses for the linestring endpoints
+          const adjustedStartAddress = await fetchAddress(routeStart[0], routeStart[1])
+          const adjustedEndAddress = await fetchAddress(routeEnd[0], routeEnd[1])
 
           setStartAddress(adjustedStartAddress)
           setEndAddress(adjustedEndAddress)
@@ -220,16 +212,8 @@ export function RoutePlanner({
         markerMode={markerMode}
         route={route}
         onMarkerSet={handleMarkerSet}
-        adjustedStartCoord={
-          useLinestringCoordinates && route.length > 0
-            ? route[0]
-            : adjustedStartCoord
-        }
-        adjustedEndCoord={
-          useLinestringCoordinates && route.length > 0
-            ? route[route.length - 1]
-            : adjustedEndCoord
-        }
+        adjustedStartCoord={route.length > 0 ? route[0] : null}
+        adjustedEndCoord={route.length > 0 ? route[route.length - 1] : null}
       />
     </div>
   )

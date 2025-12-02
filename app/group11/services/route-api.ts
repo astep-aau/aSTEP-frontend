@@ -22,16 +22,10 @@ export interface LineString {
   coordinates: [number, number][] // [lon, lat] format
 }
 
-export interface AdjustedNodes {
-  start_node: Coordinate
-  end_node: Coordinate
-}
-
 export interface RouteResponse {
   linestring: LineString
   traversalTime: number
   length: number
-  adjusted_nodes: AdjustedNodes
 }
 
 export interface ErrorResponse {

@@ -48,11 +48,11 @@ export function Display({ time, error, loading }: DisplayProps) {
     };
 
     return (
-        <div className="p-4 w-full text-center">
+        <div className="p-2 w-full text-center">
             {error ? (
                 /* Show all validation/API errors */
                 renderErrors(error)
-            ) : (
+            ) : (   
                 <>
                     {/* Loading Spinner Section - shown while calculation is in progress */}
                     {loading ? (
@@ -64,7 +64,7 @@ export function Display({ time, error, loading }: DisplayProps) {
                         /* Travel Time and Distance Display - shown when calculation completes */
                         <>
                             {time.hours !== null && (
-                                <div>
+                                <div className={"py-2"}>
                                     <h3 className="text-xl font-semibold">
                                         {`${time.hours}h ${time.minutes ?? 0}m`}
                                     </h3>

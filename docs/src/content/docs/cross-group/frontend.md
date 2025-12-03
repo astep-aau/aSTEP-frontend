@@ -275,21 +275,3 @@ zoom = 10
 // Tile Layer: OpenStreetMap
 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
 ```
-
-## User Experience Features
-
-### Loading States
-- **Display Loading**: Shows "Calculating time..." spinner in results section
-- **Map Route Loading**: Shows "Drawing Route..." overlay on map
-
-### Visual Feedback
-- **Active Map Picker**: Crosshair cursor and dashed border indicate active selection mode
-- **Error Highlighting**: Red borders on invalid input fields
-- **Loading Overlays**: Blur effects with spinners during processing
-- **Marker Colors**: Green (origin) and Red (destination) for clear distinction
-
-### Input Convenience
-- **Map Click-to-Select**: Click map instead of typing coordinates
-- **Auto-Format**: Coordinates formatted to 6 decimal places
-- **Input Sanitization**: Prevents invalid characters automatically
-- **Copy-Paste Support**: Sanitizes pasted content

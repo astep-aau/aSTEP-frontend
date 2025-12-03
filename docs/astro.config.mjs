@@ -32,14 +32,12 @@ export default defineConfig({
             // Each item here is one entry in the navigation menu.
             { label: 'Overview', slug: 'group-3' },
             { label: 'Project Architecture', slug: 'group-3/project-architecture' },
-            { label: 'LSTM Model', slug: 'group-3/lstm-model' },
-            { label: 'Edge Embeddings', slug: 'group-3/edge-embeddings' },
             { label: 'Frontend to Backend Communication', slug: 'group-3/frontend-backend-communication' },
-            { label: 'RabbitMQ', slug: 'group-3/rabbitmq' },
             { label: 'State Service', slug: 'group-3/state-service' },
             { label: 'Translator Service', slug: 'group-3/translator-service' },
             { label: 'Route Estimation Service', slug: 'group-3/route-estimation-service' },
             { label: 'Training Service', slug: 'group-3/training-service' },
+            { label: 'AI-Lab', slug: 'group-3/ailab' },
           ],
         },
         {

@@ -48,23 +48,23 @@ export function Display({ time, error, loading }: DisplayProps) {
     };
 
     return (
-        <div className="p-4 w-full text-center">
+        <div className="p-2 w-full text-center">
             {error ? (
                 /* Show all validation/API errors */
                 renderErrors(error)
-            ) : (
+            ) : (   
                 <>
                     {/* Loading Spinner Section - shown while calculation is in progress */}
                     {loading ? (
                         <div className="flex items-center justify-center rounded-lg mb-3">
-                            <Loader2 className="h-6 w-6 animate-spin" />
-                            <span className="ml-3 text-lg font-medium">Calculating route information...</span>
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                            <span className="ml-3 text-xs font-semibold">Predicting route information...</span>
                         </div>
                     ) : time.hours !== null || time.distanceKm !== null ? (
                         /* Travel Time and Distance Display - shown when calculation completes */
                         <>
                             {time.hours !== null && (
-                                <div>
+                                <div className={"py-2"}>
                                     <h3 className="text-xl font-semibold">
                                         {`${time.hours}h ${time.minutes ?? 0}m`}
                                     </h3>

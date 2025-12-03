@@ -1,0 +1,123 @@
+openapi: 3.0.3
+info:
+  title: API specification for time travel estimation
+  description: API specification for time travel estimation backend
+  version: 1.0.1
+
+paths:
+  /journey:
+    post:
+      summary: Compute travel route
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RouteRequest"
+            example:
+              start_coordinate: { lat: 1, lon: 2 }
+              end_coordinate: { lat: 2, lon: 3 }
+              timetype: DEPARTURE
+              time: { hour: 10, minute: 10 }
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Route"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+        "422":
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+
+components:
+  schemas:
+    Coordinate:
+      type: object
+      required: [lat, lon]
+      properties:
+        lat:
+          type: number
+        lon:
+          type: number
+
+    Time:
+      type: object
+      required: [hour, minute]
+      properties:
+        hour:
+          type: integer
+        minute:
+          type: integer
+
+    TimeType:
+      type: string
+      enum: [DEPARTURE, ARRIVAL]
+
+    RouteRequest:
+      type: object
+      required:
+        - start_coordinate
+        - end_coordinate
+        - timetype
+        - time
+      properties:
+        start_coordinate:
+          $ref: "#/components/schemas/Coordinate"
+        end_coordinate:
+          $ref: "#/components/schemas/Coordinate"
+        timetype:
+          $ref: "#/components/schemas/TimeType"
+        time:
+          $ref: "#/components/schemas/Time"
+
+    LineString:
+      type: object
+      required: [type, coordinates]
+      properties:
+        type:
+          type: string
+          enum: [LineString]
+        coordinates:
+          type: array
+          items:
+            type: array
+            minItems: 2
+            maxItems: 2
+            items:
+              type: number
+
+    Route:
+      type: object
+      required: [linestring, traversalTime, length]
+      properties:
+        linestring:
+          $ref: "#/components/schemas/LineString"
+        traversalTime:
+          type: number
+        length:
+          type: number
+
+    Error:
+      type: object
+      properties:
+        message: { type: string }
+        code: { type: integer }
+
+    ErrorList:
+      type: object
+      required: [errors]
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Error"

@@ -59,6 +59,9 @@ export default defineConfig({
           items: [
             // Each item here is one entry in the navigation menu.
             { label: 'Overview', slug: 'group-11' },
+            { label: 'System Architecture', slug: 'group-11/architecture' },
+            { label: 'Web API', slug: 'group-11/web-api' },
+            { label: 'Frontend', slug: 'group-11/frontend' },
             { label: 'Map Matching', slug: 'group-11/map-matching' },
             { label: 'Model', slug: 'group-11/model' },
             { label: 'Pathfinding', slug: 'group-11/pathfinding' },

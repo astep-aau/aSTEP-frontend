@@ -1,2 +1,2 @@
-NEXT_PUBLIC_GROUP11_URL=http://group11-service.cs-25-sw-5-11.svc.cluster.local:3030
+GROUP11_URL=http://group11-service.cs-25-sw-5-11.svc.cluster.local:3030
 GROUP3_URL=https://cs-astep02.srv.aau.dk/api/group3

@@ -46,7 +46,7 @@ export async function fetchRoute(
   apiUrl?: string
 ): Promise<RouteResponse> {
   // Use environment variable if available, otherwise fallback to parameter or default
-  const baseUrl = apiUrl || process.env.NEXT_PUBLIC_GROUP11_URL || 'http://localhost:3030'
+  const baseUrl = apiUrl || process.env.GROUP11_URL || 'http://localhost:3030'
 
   const response = await fetch(`${baseUrl}/journey`, {
     method: 'POST',

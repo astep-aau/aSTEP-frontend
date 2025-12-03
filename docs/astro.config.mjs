@@ -33,7 +33,6 @@ export default defineConfig({
             { label: 'Overview', slug: 'group-3' },
             { label: 'Project Architecture', slug: 'group-3/project-architecture' },
             { label: 'Frontend to Backend Communication', slug: 'group-3/frontend-backend-communication' },
-            { label: 'RabbitMQ', slug: 'group-3/rabbitmq' },
             { label: 'State Service', slug: 'group-3/state-service' },
             { label: 'Translator Service', slug: 'group-3/translator-service' },
             { label: 'Route Estimation Service', slug: 'group-3/route-estimation-service' },

@@ -13,10 +13,6 @@ Group 3 is focusing on Travel Time Estimation and this is the documentation for 
 
 - Read [Frontend to Backend Communication](/group-3/frontend-backend-communication/)
 
-## RabbitMQ
-
-- Read [RabbitMQ](/group-3/rabbitMQ/)
-
 ## Translator Service
 
 - Read [Translator Service](/group-3/translator-service/)

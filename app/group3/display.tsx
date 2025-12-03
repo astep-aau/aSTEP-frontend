@@ -57,8 +57,8 @@ export function Display({ time, error, loading }: DisplayProps) {
                     {/* Loading Spinner Section - shown while calculation is in progress */}
                     {loading ? (
                         <div className="flex items-center justify-center rounded-lg mb-3">
-                            <Loader2 className="h-6 w-6 animate-spin" />
-                            <span className="ml-3 text-lg font-medium">Calculating route information...</span>
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                            <span className="ml-3 text-xs font-semibold">Predicting route information...</span>
                         </div>
                     ) : time.hours !== null || time.distanceKm !== null ? (
                         /* Travel Time and Distance Display - shown when calculation completes */

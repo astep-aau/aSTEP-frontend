@@ -1,2 +1,2 @@
 GROUP11_URL=http://group11-service.cs-25-sw-5-11.svc.cluster.local:3030
-GROUP3_URL=https://translator-service.cs-25-sw-5-03.svc.cluster.local:80
+GROUP3_URL=https://cs-astep02.srv.aau.dk/group3/api

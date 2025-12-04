@@ -98,15 +98,21 @@ export function RoutePlanner({
   }
 
   const handleMarkerSet = async (type: 'start' | 'end', position: [number, number]) => {
-    const address = await fetchAddress(position[0], position[1])
+    // Set coordinates immediately for instant visual feedback
     if (type === 'start') {
-      setStartAddress(address)
       setStartCoord(position)
     } else {
-      setEndAddress(address)
       setEndCoord(position)
     }
     setMarkerMode(null) // Reset mode after placing marker
+
+    // Fetch address asynchronously without blocking marker placement
+    const address = await fetchAddress(position[0], position[1])
+    if (type === 'start') {
+      setStartAddress(address)
+    } else {
+      setEndAddress(address)
+    }
   }
 
   // Auto-fetch route when all required parameters are set
@@ -118,6 +124,9 @@ export function RoutePlanner({
       }
 
       setLoading(true)
+      // Clear route to show client-side markers during loading
+      setRoute([])
+
       try {
         const timeConfig = parseTimeString(selectedTime)
         if (!timeConfig) {

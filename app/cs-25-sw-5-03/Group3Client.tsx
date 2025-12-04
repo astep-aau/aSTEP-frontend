@@ -247,12 +247,16 @@ export default function Group3Page({ backendUrl}: Group3ClientProps) {
         }
 
         // Proceed with calculation if validation passes - Loading state
-        setEstimatedTime(prev => ({ 
-            ...prev, 
-            displayLoading: true, 
-            mapRouteLoading: true, 
-            error: null 
+        setEstimatedTime(prev => ({
+            ...prev,
+            displayLoading: true,
+            mapRouteLoading: true,
+            error: null
         }));
+
+        // Clear adjusted coordinates to show client-side markers during loading
+        setAdjustedOrigin(null);
+        setAdjustedDestination(null);
 
         // BACKEND COMMUNICATION
         try {

@@ -102,6 +102,9 @@ export function RoutePlanner({
   }
 
   const handleMarkerSet = async (type: 'start' | 'end', position: [number, number]) => {
+    // Clear route immediately so old adjusted coordinates don't interfere
+    setRoute([])
+
     // Set coordinates immediately for instant marker placement
     if (type === 'start') {
       setStartCoord(position)

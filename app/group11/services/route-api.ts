@@ -43,7 +43,7 @@ export interface ErrorResponse {
 export async function fetchRoute(
   request: RouteRequest
 ): Promise<RouteResponse> {
-  const response = await fetch('/api/route', {
+  const response = await fetch('/api/journey', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

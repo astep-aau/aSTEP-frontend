@@ -37,6 +37,10 @@ export function RoutePlanner({
   const [timeType, setTimeType] = useState<'departure' | 'arrival'>('departure')
   const [selectedTime, setSelectedTime] = useState<string>('')
 
+  // Track user-placed coordinates separately to trigger fetches
+  const [userStartCoord, setUserStartCoord] = useState<[number, number] | null>(null)
+  const [userEndCoord, setUserEndCoord] = useState<[number, number] | null>(null)
+
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value
 
@@ -101,8 +105,10 @@ export function RoutePlanner({
     // Set coordinates immediately for instant marker placement
     if (type === 'start') {
       setStartCoord(position)
+      setUserStartCoord(position)
     } else {
       setEndCoord(position)
+      setUserEndCoord(position)
     }
     setMarkerMode(null) // Reset mode after placing marker
 
@@ -118,8 +124,8 @@ export function RoutePlanner({
   // Auto-fetch route when all required parameters are set
   useEffect(() => {
     const fetchRouteAuto = async () => {
-      // Check if all required parameters are set
-      if (!startCoord || !endCoord || !selectedTime || selectedTime.length < 5) {
+      // Check if all required parameters are set (use userCoords for trigger)
+      if (!userStartCoord || !userEndCoord || !selectedTime || selectedTime.length < 5) {
         return
       }
 
@@ -135,20 +141,20 @@ export function RoutePlanner({
         const timetype = timeType === 'departure' ? 'DEPARTURE' : 'ARRIVAL'
 
         console.log('Auto-fetching route with:', {
-          start: startCoord,
-          end: endCoord,
+          start: userStartCoord,
+          end: userEndCoord,
           timetype,
           time: timeConfig
         })
 
         const data = await fetchRouteFromAPI({
           start_coordinate: {
-            lat: startCoord[0],
-            lon: startCoord[1],
+            lat: userStartCoord[0],
+            lon: userStartCoord[1],
           },
           end_coordinate: {
-            lat: endCoord[0],
-            lon: endCoord[1],
+            lat: userEndCoord[0],
+            lon: userEndCoord[1],
           },
           timetype,
           time: timeConfig,
@@ -165,7 +171,7 @@ export function RoutePlanner({
           const routeStart = data.linestring.coordinates[0]
           const routeEnd = data.linestring.coordinates[data.linestring.coordinates.length - 1]
 
-          // Update client-side coordinates to match server-adjusted positions
+          // Update display coordinates to match server-adjusted positions
           // This prevents flickering when placing a new marker
           setStartCoord(routeStart)
           setEndCoord(routeEnd)
@@ -185,7 +191,7 @@ export function RoutePlanner({
     }
 
     fetchRouteAuto()
-  }, [startCoord, endCoord, selectedTime, timeType])
+  }, [userStartCoord, userEndCoord, selectedTime, timeType])
 
   return (
     <div className="space-y-4">

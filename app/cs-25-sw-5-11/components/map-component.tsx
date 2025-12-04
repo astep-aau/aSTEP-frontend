@@ -15,6 +15,25 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 })
 
+// Custom icons for start (green) and end (red)
+const startIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+})
+
+const endIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+})
+
 interface RouteHandlerProps {
   markerMode: 'start' | 'end' | null
   onMarkerSet: (type: 'start' | 'end', position: [number, number]) => void
@@ -61,7 +80,7 @@ function RouteHandler({ markerMode, onMarkerSet, adjustedStartCoord, adjustedEnd
   return (
     <>
       {displayStartCoord && (
-        <Marker position={displayStartCoord}>
+        <Marker position={displayStartCoord} icon={startIcon}>
           <Popup>
             <div>
               <h3 className="font-semibold">Start Point</h3>
@@ -75,7 +94,7 @@ function RouteHandler({ markerMode, onMarkerSet, adjustedStartCoord, adjustedEnd
         </Marker>
       )}
       {displayEndCoord && (
-        <Marker position={displayEndCoord}>
+        <Marker position={displayEndCoord} icon={endIcon}>
           <Popup>
             <div>
               <h3 className="font-semibold">End Point</h3>

@@ -98,15 +98,21 @@ export function RoutePlanner({
   }
 
   const handleMarkerSet = async (type: 'start' | 'end', position: [number, number]) => {
-    const address = await fetchAddress(position[0], position[1])
+    // Set coordinates immediately for instant marker placement
     if (type === 'start') {
-      setStartAddress(address)
       setStartCoord(position)
     } else {
-      setEndAddress(address)
       setEndCoord(position)
     }
     setMarkerMode(null) // Reset mode after placing marker
+
+    // Fetch address asynchronously
+    const address = await fetchAddress(position[0], position[1])
+    if (type === 'start') {
+      setStartAddress(address)
+    } else {
+      setEndAddress(address)
+    }
   }
 
   // Auto-fetch route when all required parameters are set
@@ -158,6 +164,11 @@ export function RoutePlanner({
         if (data.linestring.coordinates.length > 0) {
           const routeStart = data.linestring.coordinates[0]
           const routeEnd = data.linestring.coordinates[data.linestring.coordinates.length - 1]
+
+          // Update client-side coordinates to match server-adjusted positions
+          // This prevents flickering when placing a new marker
+          setStartCoord(routeStart)
+          setEndCoord(routeEnd)
 
           // Fetch and update addresses for the linestring endpoints
           const adjustedStartAddress = await fetchAddress(routeStart[0], routeStart[1])

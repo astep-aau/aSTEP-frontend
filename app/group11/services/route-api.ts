@@ -36,19 +36,14 @@ export interface ErrorResponse {
 }
 
 /**
- * Fetches a route from the Zig backend API
+ * Fetches a route via the Next.js API route (server-side)
  * @param request - The route request parameters
- * @param apiUrl - The API base URL (defaults to GROUP11_URL env variable or localhost:3000)
  * @returns The route response with linestring, traversal time, and length
  */
 export async function fetchRoute(
-  request: RouteRequest,
-  apiUrl?: string
+  request: RouteRequest
 ): Promise<RouteResponse> {
-  // Use environment variable if available, otherwise fallback to parameter or default
-  const baseUrl = apiUrl || process.env.GROUP11_URL || 'http://localhost:3030'
-
-  const response = await fetch(`${baseUrl}/journey`, {
+  const response = await fetch('/api/route', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -57,11 +52,8 @@ export async function fetchRoute(
   })
 
   if (!response.ok) {
-    if (response.status === 400 || response.status === 422) {
-      const error: ErrorResponse = await response.json()
-      throw new Error(error.errors[0]?.message || 'Validation error')
-    }
-    throw new Error(`HTTP error! status: ${response.status}`)
+    const errorData = await response.json()
+    throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
   }
 
   const data = await response.json()

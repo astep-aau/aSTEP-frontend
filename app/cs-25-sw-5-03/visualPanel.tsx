@@ -11,10 +11,12 @@ import { ParsedCoordinate } from "./Group3Client";
 import { Loader2 } from "lucide-react";
 import { Map } from "./dynamicMap3";
 
-// Component Props 
+// Component Props
 interface VisualPanelProps {
     origin: ParsedCoordinate | null;
     destination: ParsedCoordinate | null;
+    adjustedOrigin?: ParsedCoordinate | null;
+    adjustedDestination?: ParsedCoordinate | null;
     routeData: Array<[number, number]> | undefined; // Route geometry/points
     loading: boolean;
     helpOpen?: boolean;
@@ -22,9 +24,9 @@ interface VisualPanelProps {
     clickable?: boolean;
 }
 
-// Main Visual Panel Component 
+// Main Visual Panel Component
 
-export function VisualPanel({ origin, destination, routeData, loading, helpOpen, onMapClick, clickable }: VisualPanelProps) {
+export function VisualPanel({ origin, destination, adjustedOrigin, adjustedDestination, routeData, loading, helpOpen, onMapClick, clickable }: VisualPanelProps) {
     const cityName = "Harbin, China";
 
       {/* Help modal overlay on top of VisualPanel */}
@@ -53,11 +55,11 @@ export function VisualPanel({ origin, destination, routeData, loading, helpOpen,
       {/* Map Content Area */}
             <div className="w-full h-full relative">
                 <div className="h-[550px] w-full rounded-lg border relative">
-                    <Map 
+                    <Map
                         center={[45.7536, 126.6625]}
                         zoom={13}
-                        origin={origin}
-                        destination={destination}
+                        origin={adjustedOrigin || origin}
+                        destination={adjustedDestination || destination}
                         routeData={routeData}
                         className="h-[550px] w-full rounded-lg"
                         onMapClick={onMapClick}

@@ -74,6 +74,8 @@ export default function Group3Page({ backendUrl}: Group3ClientProps) {
     const [parsedOrigin, setParsedOrigin] = useState<ParsedCoordinate | null>(null);
     const [parsedDestination, setParsedDestination] = useState<ParsedCoordinate | null>(null);
     const [routeData, setRouteData] = useState<[number, number][] | undefined>(undefined); // State for the route geometry/points
+    const [adjustedOrigin, setAdjustedOrigin] = useState<ParsedCoordinate | null>(null);
+    const [adjustedDestination, setAdjustedDestination] = useState<ParsedCoordinate | null>(null);
     
     // Map picker state - tracks which input field is active for map picking
     const [activeMapPicker, setActiveMapPicker] = useState<'origin' | 'destination' | null>(null);
@@ -174,6 +176,12 @@ export default function Group3Page({ backendUrl}: Group3ClientProps) {
                         [point.latitude, point.longitude] as [number, number]
                     ) || undefined;
                     setRouteData(route);
+
+                    // Update adjusted coordinates from server response
+                    if (route && route.length > 0) {
+                        setAdjustedOrigin({ lat: route[0][0], lon: route[0][1] });
+                        setAdjustedDestination({ lat: route[route.length - 1][0], lon: route[route.length - 1][1] });
+                    }
 
                     const totalMinutes = responseData.travelTimeMinutes || 0;
                     let hours = 0;
@@ -315,9 +323,11 @@ export default function Group3Page({ backendUrl}: Group3ClientProps) {
                     />
                     
                     {/* Visual Panel (Map) */}
-                    <VisualPanel 
+                    <VisualPanel
                         origin={parsedOrigin}
                         destination={parsedDestination}
+                        adjustedOrigin={adjustedOrigin}
+                        adjustedDestination={adjustedDestination}
                         routeData={routeData}
                         loading={estimatedTime.mapRouteLoading}
                         helpOpen={help}

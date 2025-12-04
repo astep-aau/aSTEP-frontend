@@ -39,10 +39,18 @@ interface RouteHandlerProps {
   onMarkerSet: (type: 'start' | 'end', position: [number, number]) => void
   adjustedStartCoord?: [number, number] | null
   adjustedEndCoord?: [number, number] | null
+  clientStartCoord?: [number, number] | null
+  clientEndCoord?: [number, number] | null
 }
 
-function RouteHandler({ markerMode, onMarkerSet, adjustedStartCoord, adjustedEndCoord }: RouteHandlerProps) {
-  const [points, setPoints] = useState<{ start?: [number, number], end?: [number, number] }>({})
+function RouteHandler({
+  markerMode,
+  onMarkerSet,
+  adjustedStartCoord,
+  adjustedEndCoord,
+  clientStartCoord,
+  clientEndCoord
+}: RouteHandlerProps) {
   const map = useMap()
   const markerModeRef = useRef(markerMode)
   const onMarkerSetRef = useRef(onMarkerSet)
@@ -59,8 +67,6 @@ function RouteHandler({ markerMode, onMarkerSet, adjustedStartCoord, adjustedEnd
       if (!markerModeRef.current) return
 
       const newPoint: [number, number] = [e.latlng.lat, e.latlng.lng]
-
-      setPoints(prev => ({ ...prev, [markerModeRef.current!]: newPoint }))
       onMarkerSetRef.current(markerModeRef.current, newPoint)
     }
 
@@ -73,9 +79,9 @@ function RouteHandler({ markerMode, onMarkerSet, adjustedStartCoord, adjustedEnd
     }
   }, [map]) // Only re-run if map instance changes
 
-  // Use adjusted coordinates if available, otherwise use clicked points
-  const displayStartCoord = adjustedStartCoord || points.start
-  const displayEndCoord = adjustedEndCoord || points.end
+  // Use adjusted coordinates if available, otherwise use client-side clicked points
+  const displayStartCoord = adjustedStartCoord || clientStartCoord
+  const displayEndCoord = adjustedEndCoord || clientEndCoord
 
   return (
     <>
@@ -120,6 +126,8 @@ interface MapComponentProps {
   onMarkerSet: (type: 'start' | 'end', position: [number, number]) => void
   adjustedStartCoord?: [number, number] | null
   adjustedEndCoord?: [number, number] | null
+  clientStartCoord?: [number, number] | null
+  clientEndCoord?: [number, number] | null
 }
 
 export function MapComponent({
@@ -130,7 +138,9 @@ export function MapComponent({
   route,
   onMarkerSet,
   adjustedStartCoord,
-  adjustedEndCoord
+  adjustedEndCoord,
+  clientStartCoord,
+  clientEndCoord
 }: MapComponentProps) {
   const { theme } = useTheme()
 
@@ -156,6 +166,8 @@ export function MapComponent({
           onMarkerSet={onMarkerSet}
           adjustedStartCoord={adjustedStartCoord}
           adjustedEndCoord={adjustedEndCoord}
+          clientStartCoord={clientStartCoord}
+          clientEndCoord={clientEndCoord}
         />
 
         {route.length > 0 && (

@@ -1,26 +1,35 @@
 // UploadPage.js
 "use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Upload, X } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { Upload, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
+import { LocationAutocomplete } from "@/components/LocationAutocomplete";
 
 export default function UploadPage() {
   const router = useRouter();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [datasetName, setDatasetName] = useState<string>('');
+  const [datasetName, setDatasetName] = useState<string>("");
+  const [datasetLocation, setDatasetLocation] = useState<string>("");
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [processingType, setProcessingType] = useState("forecast");
 
   const handleFileSelect = (file: File) => {
-    if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+    if (file.type === "text/csv" || file.name.endsWith(".csv")) {
       setSelectedFile(file);
     } else {
-      alert('Please select a CSV file');
+      alert("Please select a CSV file");
     }
   };
 
@@ -49,64 +58,77 @@ export default function UploadPage() {
   };
 
   const handleUpload = async () => {
-  if (!selectedFile) {
-    alert('Please select a file first');
-    return;
-  }
-  if (!datasetName.trim()) {
-    alert('Please enter a name for the dataset');
-    return;
-  }
-  if (datasetName.trim().length < 3) {
-    alert('Dataset name must be at least 3 characters');
-    return;
-  }
-  if (datasetName.trim().length > 25) {
-    alert('Dataset name must not exceed 25 characters');
-    return;
-  }
-  
-  setIsUploading(true);
-  
-  try {
-    // Read the file as text
-    const csvText = await selectedFile.text();
-    
-    // Send name as query parameter and CSV as raw body
-    const response = await fetch(
-      `http://127.0.0.1:8000/datasets?name=${encodeURIComponent(datasetName.trim())}&start_date=${new Date().toISOString()}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'text/csv',
-        },
-        body: csvText,
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || `Upload failed: ${response.statusText}`);
+    if (!selectedFile) {
+      alert("Please select a file first");
+      return;
+    }
+    if (!datasetName.trim()) {
+      alert("Please enter a name for the dataset");
+      return;
+    }
+    if (datasetName.trim().length < 3) {
+      alert("Dataset name must be at least 3 characters");
+      return;
+    }
+    if (datasetName.trim().length > 25) {
+      alert("Dataset name must not exceed 25 characters");
+      return;
+    }
+    if (!datasetLocation && processingType == "forecast") {
+      alert("Forecast needs a location to function");
+      return;
     }
 
-    const data = await response.json();
-    console.log('Upload successful:', data);
-    
-    setSelectedFile(null);
-    setDatasetName('');
-    setIsUploading(false);
-    router.push('/group9/MyDataset');
-  } catch (error) {
-    console.error('Upload failed:', error);
-    alert(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    setIsUploading(false);
-  }
-};
+    setIsUploading(true);
+
+    try {
+      // Read the file as text
+      const csvText = await selectedFile.text();
+
+      // Send name as query parameter and CSV as raw body
+      const response = await fetch(
+        `http://127.0.0.1:8000/datasets?name=${encodeURIComponent(datasetName.trim())}&start_date=${new Date().toISOString()}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/csv",
+          },
+          body: csvText,
+        },
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.detail || `Upload failed: ${response.statusText}`,
+        );
+      }
+
+      const data = await response.json();
+      console.log("Upload successful:", data);
+
+      setSelectedFile(null);
+      setDatasetName("");
+      setIsUploading(false);
+      router.push("/group9/MyDataset");
+    } catch (error) {
+      console.error("Upload failed:", error);
+      alert(
+        `Upload failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+      setIsUploading(false);
+    }
+  };
 
   const clearFile = () => {
     setSelectedFile(null);
   };
+  const handleLocationSelect = (loc: { name: string }) => {
+    setDatasetLocation(loc.name);
 
+    // Example wttr.in usage
+    // fetch(`/api/weather?lat=${loc.lat}&lon=${loc.lon}`)
+  };
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-6 py-8 max-w-6xl">
@@ -115,6 +137,59 @@ export default function UploadPage() {
           <p className="text-muted-foreground">
             Upload time series data for analysis
           </p>
+        </div>
+
+        <div>
+          {/* Processing Type Selection */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Processing Method</CardTitle>
+              <CardDescription>
+                Choose which analysis pipeline this dataset should follow
+              </CardDescription>
+            </CardHeader>
+            <Separator />
+
+            <CardContent className="pt-4 space-y-4">
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-foreground">
+                  Select model
+                </p>
+
+                <div className="flex flex-col gap-3">
+                  {/* Forecasting */}
+                  <label className="flex items-center space-x-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="processingType"
+                      value="forecast"
+                      checked={processingType === "forecast"}
+                      onChange={() => setProcessingType("forecast")}
+                      className="h-4 w-4 accent-primary"
+                    />
+                    <span className="text-sm text-foreground">
+                      Forecasting (Time-series Prediction)
+                    </span>
+                  </label>
+
+                  {/* Anomaly Detection */}
+                  <label className="flex items-center space-x-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="processingType"
+                      value="anomaly"
+                      checked={processingType === "anomaly"}
+                      onChange={() => setProcessingType("anomaly")}
+                      className="h-4 w-4 accent-primary"
+                    />
+                    <span className="text-sm text-foreground">
+                      Anomaly / Outlier Detection
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
@@ -130,19 +205,21 @@ export default function UploadPage() {
                 {/* Dataset Name Input - shows when file is selected */}
                 {selectedFile && (
                   <div className="space-y-3">
-                    <label className="text-sm font-medium block mb-3">Name</label>
+                    <label className="text-sm font-medium block mb-3">
+                      Name
+                    </label>
                     <Input
                       type="text"
                       placeholder="Enter a name for your dataset"
                       value={datasetName}
-                      onChange={(e) => setDatasetName(e.target.value.slice(0, 25))}
+                      onChange={(e) =>
+                        setDatasetName(e.target.value.slice(0, 25))
+                      }
                       minLength={3}
                       maxLength={25}
                       disabled={isUploading}
                     />
-                    <p className="text-xs text-muted-foreground">
-                      {datasetName.length}/25 characters - minimum 3 required
-                    </p>
+                    <LocationAutocomplete onSelect={handleLocationSelect} />
                   </div>
                 )}
 
@@ -152,14 +229,16 @@ export default function UploadPage() {
                     <div className="flex items-center space-x-3">
                       <Upload size={20} className="text-primary" />
                       <div>
-                        <p className="font-medium text-foreground">{selectedFile.name}</p>
+                        <p className="font-medium text-foreground">
+                          {selectedFile.name}
+                        </p>
                         <p className="text-sm text-muted-foreground">
                           {(selectedFile.size / 1024).toFixed(2)} KB
                         </p>
                       </div>
                     </div>
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       size="sm"
                       onClick={clearFile}
                       className="text-muted-foreground hover:text-foreground"
@@ -171,12 +250,14 @@ export default function UploadPage() {
 
                 {/* Drag & Drop Area */}
                 {!selectedFile && (
-                  <div 
+                  <div
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
                     className={`h-64 flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg transition-colors duration-200 cursor-pointer ${
-                      isDragging ? 'border-primary bg-primary/5' : 'border-border hover:border-primary'
+                      isDragging
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary"
                     }`}
                   >
                     <Upload size={48} className="text-muted-foreground mb-3" />
@@ -184,10 +265,10 @@ export default function UploadPage() {
                       Drag & Drop your CSV file here
                     </p>
                     <p className="text-sm text-muted-foreground mb-4">or</p>
-                    <input 
-                      type="file" 
-                      id="file-input" 
-                      accept=".csv" 
+                    <input
+                      type="file"
+                      id="file-input"
+                      accept=".csv"
                       className="hidden"
                       onChange={handleFileInputChange}
                     />
@@ -196,17 +277,23 @@ export default function UploadPage() {
                         Browse Files
                       </label>
                     </Button>
-                    <p className="mt-2 text-xs text-muted-foreground">Supports: CSV (Comma Separated Values)</p>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Supports: CSV (Comma Separated Values)
+                    </p>
                   </div>
                 )}
 
                 {/* Upload Button */}
-                <Button 
+                <Button
                   onClick={handleUpload}
                   disabled={!selectedFile || isUploading}
                   className="w-full"
                 >
-                  {isUploading ? 'Uploading...' : selectedFile ? 'Upload' : 'Select a file to upload'}
+                  {isUploading
+                    ? "Uploading..."
+                    : selectedFile
+                      ? "Upload"
+                      : "Select a file to upload"}
                 </Button>
               </CardContent>
             </Card>
@@ -221,11 +308,17 @@ export default function UploadPage() {
               <Separator />
               <CardContent className="pt-6">
                 <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
-                  <li>File format <span className="font-semibold text-foreground">must</span> be CSV.</li>
+                  <li>
+                    File format{" "}
+                    <span className="font-semibold text-foreground">must</span>{" "}
+                    be CSV.
+                  </li>
                   <li>Data should be structured as a time series.</li>
                   <li>The first column should contain date/time stamps.</li>
                   <li>Maximum file size is 50MB.</li>
-                  <li>All values should be numerical (except the timestamp).</li>
+                  <li>
+                    All values should be numerical (except the timestamp).
+                  </li>
                 </ul>
               </CardContent>
             </Card>

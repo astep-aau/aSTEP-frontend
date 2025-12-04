@@ -44,6 +44,29 @@ export default function AnalysisPage() {
                   </label>
                 </div>
 
+          <Card>
+            <CardHeader>
+              <CardTitle>Forecasting</CardTitle>
+              <CardDescription>Choose a forecasting model</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-3">
+                {/* Option 1 */}
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="radio"
+                    id="option1"
+                    name="Forecasting energy"
+                    value="option1"
+                    checked={selectedOption === 'option1'}
+                    onChange={(e) => setSelectedOption(e.target.value)}
+                    className="w-4 h-4"
+                  />
+                  <label htmlFor="option4" className="cursor-pointer font-normal">
+                    Option 1
+                  </label>
+              </div>
+
                 {/* Option 2 */}
                 <div className="flex items-center space-x-3">
                   <input

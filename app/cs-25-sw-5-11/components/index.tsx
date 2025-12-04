@@ -229,6 +229,8 @@ export function RoutePlanner({
         markerMode={markerMode}
         route={route}
         onMarkerSet={handleMarkerSet}
+        clientStartCoord={startCoord}
+        clientEndCoord={endCoord}
         adjustedStartCoord={route.length > 0 ? route[0] : null}
         adjustedEndCoord={route.length > 0 ? route[route.length - 1] : null}
       />

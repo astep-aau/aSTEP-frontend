@@ -103,8 +103,10 @@ export default function MyDatasetPage() {
                                         </p>
                                     </div>
                                     <div className="flex gap-3">
-                                        <Button variant="outline" size="sm">
-                                            View Details
+                                        <Button variant="outline" size="sm" asChild>
+                                            <Link href={`/group9/DetailPage?id=${dataset.id}&name=${encodeURIComponent(dataset.name)}`}>
+                                                View Details
+                                            </Link>
                                         </Button>
                                         <Button asChild size="sm">
                                             <Link href={`/group9/Analysis/${dataset.id}?name=${encodeURIComponent(dataset.name)}`}>

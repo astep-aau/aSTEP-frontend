@@ -14,16 +14,13 @@ import { Separator } from "@/components/ui/separator";
 import { Upload, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
-import { LocationAutocomplete } from "@/components/LocationAutocomplete";
 
 export default function UploadPage() {
   const router = useRouter();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [datasetName, setDatasetName] = useState<string>("");
-  const [datasetLocation, setDatasetLocation] = useState<string>("");
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [processingType, setProcessingType] = useState("forecast");
 
   const handleFileSelect = (file: File) => {
     if (file.type === "text/csv" || file.name.endsWith(".csv")) {
@@ -74,10 +71,6 @@ export default function UploadPage() {
       alert("Dataset name must not exceed 25 characters");
       return;
     }
-    if (!datasetLocation && processingType == "forecast") {
-      alert("Forecast needs a location to function");
-      return;
-    }
 
     setIsUploading(true);
 
@@ -123,12 +116,7 @@ export default function UploadPage() {
   const clearFile = () => {
     setSelectedFile(null);
   };
-  const handleLocationSelect = (loc: { name: string }) => {
-    setDatasetLocation(loc.name);
-
-    // Example wttr.in usage
-    // fetch(`/api/weather?lat=${loc.lat}&lon=${loc.lon}`)
-  };
+  
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-6 py-8 max-w-6xl">
@@ -137,59 +125,6 @@ export default function UploadPage() {
           <p className="text-muted-foreground">
             Upload time series data for analysis
           </p>
-        </div>
-
-        <div>
-          {/* Processing Type Selection */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Processing Method</CardTitle>
-              <CardDescription>
-                Choose which analysis pipeline this dataset should follow
-              </CardDescription>
-            </CardHeader>
-            <Separator />
-
-            <CardContent className="pt-4 space-y-4">
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-foreground">
-                  Select model
-                </p>
-
-                <div className="flex flex-col gap-3">
-                  {/* Forecasting */}
-                  <label className="flex items-center space-x-3 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="processingType"
-                      value="forecast"
-                      checked={processingType === "forecast"}
-                      onChange={() => setProcessingType("forecast")}
-                      className="h-4 w-4 accent-primary"
-                    />
-                    <span className="text-sm text-foreground">
-                      Forecasting (Time-series Prediction)
-                    </span>
-                  </label>
-
-                  {/* Anomaly Detection */}
-                  <label className="flex items-center space-x-3 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="processingType"
-                      value="anomaly"
-                      checked={processingType === "anomaly"}
-                      onChange={() => setProcessingType("anomaly")}
-                      className="h-4 w-4 accent-primary"
-                    />
-                    <span className="text-sm text-foreground">
-                      Anomaly / Outlier Detection
-                    </span>
-                  </label>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
@@ -219,7 +154,6 @@ export default function UploadPage() {
                       maxLength={25}
                       disabled={isUploading}
                     />
-                    <LocationAutocomplete onSelect={handleLocationSelect} />
                   </div>
                 )}
 

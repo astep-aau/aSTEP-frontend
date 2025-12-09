@@ -2,9 +2,6 @@
 title: Web API Documentation
 description: Detailed documentation for the Elessar Web API endpoints
 ---
-
-# Web API Documentation
-
 The Elessar Web API provides travel time estimation and route planning functionality. Built with Zig and the Zap HTTP framework, it combines A* pathfinding with LSTM-based machine learning predictions to deliver accurate travel time estimates.
 
 ## Base Information

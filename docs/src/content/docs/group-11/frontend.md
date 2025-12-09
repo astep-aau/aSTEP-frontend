@@ -50,7 +50,7 @@ The main orchestrator component that manages application state and coordinates b
 |----------------|------|-------------|
 | `route` | `[number, number][]` | Array of coordinate pairs forming the route LineString |
 | `distance` | `number \| null` | Route distance in kilometers |
-| `duration` | `number \| null` | Estimated travel time in minutes |
+| `duration` | `number \| null` | Estimated travel time in seconds (from backend) |
 | `loading` | `boolean` | Loading state during API requests |
 | `markerMode` | `'start' \| 'end' \| null` | Current marker placement mode |
 | `startCoord` | `[number, number] \| null` | Displayed start coordinate (adjusted after API response) |
@@ -124,7 +124,7 @@ Displays route information and calculated travel times.
 interface RouteInfoCardProps {
   loading: boolean
   distance: number | null      // in km
-  duration: number | null      // in minutes
+  duration: number | null      // in seconds (converted to minutes for display)
   timeType: 'departure' | 'arrival'
   selectedTime: string         // HH:MM format
 }
@@ -135,9 +135,10 @@ interface RouteInfoCardProps {
 - **Loading State:** Shows "Loading route..." while fetching
 - **Empty State:** Shows placeholder text when no route is available
 - **Route Info Display:** Shows distance, duration, and calculated times
+  - Converts duration from seconds to minutes for display
   - For departure time: Calculates and displays arrival time
   - For arrival time: Would calculate required departure time (currently disabled)
-- **Time Calculations:** Adds duration to departure time to show estimated arrival
+- **Time Calculations:** Converts duration to minutes, then adds to departure time to show estimated arrival
 
 **Example Display:**
 
@@ -261,7 +262,7 @@ interface RouteResponse {
     type: 'LineString'
     coordinates: [number, number][]  // [lat, lon] pairs
   }
-  traversalTime: number  // Travel time in minutes
+  traversalTime: number  // Travel time in seconds (backend returns seconds)
   length: number         // Distance in kilometers
 }
 ```
@@ -279,7 +280,7 @@ interface RouteResponse {
       [45.760000, 126.650000]
     ]
   },
-  "traversalTime": 14,
+  "traversalTime": 840,
   "length": 6.9
 }
 ```
@@ -329,7 +330,7 @@ User Interaction
          [45.759876, 126.649987]   ← ADJUSTED end (nearest node)
        ]
      },
-     "traversalTime": 14,
+     "traversalTime": 840,  // seconds (converted to 14 minutes for display)
      "length": 6.9
    }
    ↓
@@ -340,7 +341,7 @@ User Interaction
    → Start marker moved to route[0] (adjusted position)
    → End marker moved to route[length-1] (adjusted position)
    → Polyline drawn connecting all coordinates
-   → Travel time displayed: "14 minutes"
+   → Travel time displayed: "14 minutes" (840 seconds converted to minutes)
 ```
 
 ## Coordinate Adjustment System
@@ -943,8 +944,8 @@ const data = await response.json()
 //     type: "LineString",
 //     coordinates: [[lat1,lon1], [lat2,lon2], ...]
 //   },
-//   traversalTime: 14,  // minutes
-//   length: 6.9         // km
+//   traversalTime: 840,  // seconds (backend always returns seconds)
+//   length: 6.9          // km
 // }
 
 // 5. Update UI
@@ -961,6 +962,7 @@ setEndCoord(data.linestring.coordinates[n-1])      // Adjusted end
 2. **Server-Side Configuration:** Backend URL is kept server-side for security
 3. **Coordinate Adjustment is Automatic:** Backend always returns adjusted coordinates as first/last LineString points
 4. **LineString is Ready to Render:** Can be directly passed to Leaflet's Polyline component
-5. **No Additional Processing Needed:** Response format is optimized for immediate visualization
-6. **Harbin-Scoped:** All returned coordinates are guaranteed to be within Harbin's road network
-7. **Units:** Distance displayed in km, duration displayed in minutes in the UI
+5. **Harbin-Scoped:** All returned coordinates are guaranteed to be within Harbin's road network
+6. **Units:**
+   - Backend returns: `traversalTime` in **seconds**, `length` in **km**
+   - Frontend displays: Duration in **minutes** (converts seconds/60), distance in **km**

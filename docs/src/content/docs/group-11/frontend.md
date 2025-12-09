@@ -5,11 +5,11 @@ description: Detailed documentation for the Group 11 frontend application and ba
 
 # Frontend Documentation
 
-The Group 11 frontend is a Next.js-based web application that provides an interactive map interface for travel time estimation in Harbin, China. Users can select start and end points on a map, specify departure or arrival times, and receive optimized routes with accurate travel time predictions.
+The Group 11 frontend is a Next.js-based web application that provides an interactive map interface for travel time estimation in Harbin, China. Users can select start and end points on a map, specify departure or arrival times (arrival time is future work!), and receive optimized routes with accurate travel time predictions.
 
 ## Overview
 
-**Location:** `aSTEP-frontend/app/group11`
+**Location:** `aSTEP-frontend/app/cs-25-sw-5-11`
 
 **Framework:** Next.js 14 with React and TypeScript
 
@@ -22,7 +22,7 @@ The Group 11 frontend is a Next.js-based web application that provides an intera
 The frontend follows a component-based architecture with clear separation of concerns:
 
 ```
-app/group11/
+app/cs-25-sw-5-11/
 ├── components/          # React components
 │   ├── index.tsx        # RoutePlanner main component
 │   ├── map-component.tsx        # Interactive map with Leaflet
@@ -97,7 +97,7 @@ The route is rendered using React-Leaflet's `Polyline` component:
 <Polyline
   positions={route}      // Array of [lat, lon] coordinates
   color="blue"           // Route line color
-  weight={8}             // Line width in pixels
+  weight={5}             // Line width in pixels
   opacity={0.7}          // Line transparency
 />
 ```
@@ -113,7 +113,7 @@ The frontend communicates with the Elessar backend API through a dedicated servi
 **Base Configuration:**
 
 ```typescript
-const baseUrl = process.env.NEXT_PUBLIC_GROUP11_URL || 'http://localhost:3030'
+const baseUrl = process.env.GROUP11_URL || 'http://localhost:3030'
 ```
 
 The API URL can be configured via environment variable or defaults to localhost.

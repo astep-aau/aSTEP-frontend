@@ -174,7 +174,7 @@ export function MapComponent({
           <Polyline
             positions={route}
             color="blue"
-            weight={8}
+            weight={5}
             opacity={0.7}
           />
         )}

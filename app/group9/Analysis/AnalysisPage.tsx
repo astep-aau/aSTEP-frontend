@@ -4,15 +4,36 @@ import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { LocationAutocomplete } from "@/components/LocationAutocomplete";
+
 
 export default function AnalysisPage() {
   const searchParams = useSearchParams();
   const datasetName = searchParams.get('name') || 'Datasets';
   const [selectedOption, setSelectedOption] = useState('option1');
-
+  const [datasetLocation, setDatasetLocation] = useState<string>("");
+  const [processingType, setProcessingType] = useState("forecast");
+  
   const handleStartAnalysis = () => {
+    if (!datasetLocation && processingType == "forecast") {
+      alert("Forecast needs a location to function");
+      return;
+    }
+    
     console.log('Starting outlier detection with:', selectedOption);
   };
+
+  const handleLocationSelect = (loc: { name: string }) => {
+    setDatasetLocation(loc.name);
+
+    // Example wttr.in usage
+    // fetch(`/api/weather?lat=${loc.lat}&lon=${loc.lon}`)
+  };
+
+  const handleForecastOption = (name: string) => {
+    setSelectedOption(name);
+    setProcessingType("forecast");
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -43,7 +64,9 @@ export default function AnalysisPage() {
                     Option 1
                   </label>
                 </div>
-
+              </div>
+            </CardContent>
+          </Card>
           <Card>
             <CardHeader>
               <CardTitle>Forecasting</CardTitle>
@@ -59,7 +82,7 @@ export default function AnalysisPage() {
                     name="Forecasting energy"
                     value="option1"
                     checked={selectedOption === 'option1'}
-                    onChange={(e) => setSelectedOption(e.target.value)}
+                    onChange={(e) => handleForecastOption(e.target.value)}
                     className="w-4 h-4"
                   />
                   <label htmlFor="option4" className="cursor-pointer font-normal">
@@ -75,7 +98,7 @@ export default function AnalysisPage() {
                     name="outlier-method"
                     value="option2"
                     checked={selectedOption === 'option2'}
-                    onChange={(e) => setSelectedOption(e.target.value)}
+                    onChange={(e) => handleForecastOption(e.target.value)}
                     className="w-4 h-4"
                   />
                   <label htmlFor="option2" className="cursor-pointer font-normal">
@@ -91,7 +114,7 @@ export default function AnalysisPage() {
                     name="outlier-method"
                     value="option3"
                     checked={selectedOption === 'option3'}
-                    onChange={(e) => setSelectedOption(e.target.value)}
+                    onChange={(e) => handleForecastOption(e.target.value)}
                     className="w-4 h-4"
                   />
                   <label htmlFor="option3" className="cursor-pointer font-normal">
@@ -99,10 +122,14 @@ export default function AnalysisPage() {
                   </label>
                 </div>
               </div>
+              
+              <div>
+                <LocationAutocomplete onSelect={handleLocationSelect} />
+              </div>
 
               {/* Start Button */}
               <Button onClick={handleStartAnalysis} className="w-full">
-                Start Outlier Detection
+                Start Forecasting
               </Button>
             </CardContent>
           </Card>

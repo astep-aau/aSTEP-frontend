@@ -65,7 +65,7 @@ Content-Type: application/json
 | `end_coordinate` | Object | Yes | Destination coordinates |
 | `end_coordinate.lat` | Number | Yes | Latitude of destination |
 | `end_coordinate.lon` | Number | Yes | Longitude of destination |
-| `timetype` | String | Yes | Whether the time represents departure or arrival. Must be either `"DEPARTURE"` or `"ARRIVAL"` |
+| `timetype` | String | Yes | Whether the time represents departure or arrival. Must be either `"DEPARTURE"` or `"ARRIVAL"` <br> **Note: Only `"DEPARTURE"` is currently supported. Using `"ARRIVAL"` will result in a 400 error.**  |
 | `time` | Object | Yes | Time of travel |
 | `time.hour` | Integer | Yes | Hour in 24-hour format (0-23) |
 | `time.minute` | Integer | Yes | Minute (0-59) |
@@ -200,7 +200,7 @@ When a journey request is received, the API performs the following steps:
    - Ensures coordinates map to actual traversable roads
 
 3. **Data Loading**
-   - Loads edge data from CSV (`data/edge_data_day3.csv`)
+   - Loads edge data from CSV (`data/edge_data_day7.csv`)
    - Loads edge connections from CSV (`data/edge_connections.csv`)
    - Loads vertex data from CSV (`data/vertex.csv`)
 

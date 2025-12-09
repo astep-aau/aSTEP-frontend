@@ -2,10 +2,7 @@
 title: Frontend Documentation
 description: Detailed documentation for the Group 11 frontend application and backend integration
 ---
-
-# Frontend Documentation
-
-The Group 11 frontend is a Next.js-based web application that provides an interactive map interface for travel time estimation in Harbin, China. Users can select start and end points on a map, specify departure or arrival times (arrival time is future work!), and receive optimized routes with accurate travel time predictions.
+The Group 11 frontend is a Next.js-based web application that provides an interactive map interface for travel time estimation in Harbin, China. Users can select start and end points on a map, specify departure times, and receive optimized routes with accurate travel time predictions. The application uses a Next.js API route to proxy requests to the Elessar backend for enhanced security and flexibility.
 
 ## Overview
 
@@ -26,13 +23,19 @@ app/cs-25-sw-5-11/
 ├── components/          # React components
 │   ├── index.tsx        # RoutePlanner main component
 │   ├── map-component.tsx        # Interactive map with Leaflet
+│   ├── map.module.css           # Styles for dark mode map
 │   ├── location-picker.tsx      # UI for selecting start/end points
 │   ├── route-info-card.tsx      # Displays route information
-│   └── time-picker-card.tsx     # Time selection UI
+│   ├── time-picker-card.tsx     # Time selection UI
+│   └── service-example.tsx      # Example service component
 ├── services/            # API integration
-│   └── route-api.ts     # Backend API communication
+│   └── route-api.ts     # API service for route requests
 ├── page.tsx             # Next.js page entry point
 └── api-spec.yml         # OpenAPI specification
+
+app/api/
+└── journey/
+    └── route.ts         # Next.js API route (proxy to backend)
 ```
 
 ## Key Components
@@ -46,21 +49,26 @@ The main orchestrator component that manages application state and coordinates b
 | State Variable | Type | Description |
 |----------------|------|-------------|
 | `route` | `[number, number][]` | Array of coordinate pairs forming the route LineString |
-| `distance` | `number \| null` | Route distance in meters |
-| `duration` | `number \| null` | Estimated travel time in seconds |
+| `distance` | `number \| null` | Route distance in kilometers |
+| `duration` | `number \| null` | Estimated travel time in minutes |
 | `loading` | `boolean` | Loading state during API requests |
 | `markerMode` | `'start' \| 'end' \| null` | Current marker placement mode |
-| `startCoord` | `[number, number] \| null` | User-selected start coordinate |
-| `endCoord` | `[number, number] \| null` | User-selected end coordinate |
+| `startCoord` | `[number, number] \| null` | Displayed start coordinate (adjusted after API response) |
+| `endCoord` | `[number, number] \| null` | Displayed end coordinate (adjusted after API response) |
+| `userStartCoord` | `[number, number] \| null` | User-clicked start coordinate (triggers API call) |
+| `userEndCoord` | `[number, number] \| null` | User-clicked end coordinate (triggers API call) |
+| `startAddress` | `string` | Human-readable address for start location |
+| `endAddress` | `string` | Human-readable address for end location |
 | `timeType` | `'departure' \| 'arrival'` | Whether time represents departure or arrival |
 | `selectedTime` | `string` | Time in HH:MM format |
 
 **Key Features:**
 
-- **Auto-fetch routing:** Automatically requests route when all parameters are set
-- **Coordinate adjustment handling:** Updates displayed coordinates based on backend-adjusted positions
+- **Auto-fetch routing:** Automatically requests route when all parameters are set (triggered by `useEffect` watching `userStartCoord`, `userEndCoord`, `selectedTime`, and `timeType`)
+- **Dual coordinate tracking:** Separates user-clicked coordinates (`userStartCoord`, `userEndCoord`) from display coordinates (`startCoord`, `endCoord`) to prevent race conditions
+- **Coordinate adjustment handling:** Updates displayed coordinates to backend-adjusted positions from route endpoints
 - **Address geocoding:** Fetches human-readable addresses using Nominatim (OpenStreetMap)
-- **Time validation:** Ensures valid 24-hour time format (HH:MM)
+- **Time validation:** Ensures valid 24-hour time format (HH:MM) with real-time input validation
 
 ### MapComponent
 
@@ -76,6 +84,8 @@ interface MapComponentProps {
   markerMode: 'start' | 'end' | null // Active marker placement mode
   route: [number, number][]           // Route coordinates to display
   onMarkerSet: (type, position) => void // Callback when marker placed
+  clientStartCoord?: [number, number] | null    // User-clicked start coordinate
+  clientEndCoord?: [number, number] | null      // User-clicked end coordinate
   adjustedStartCoord?: [number, number] | null  // Backend-adjusted start
   adjustedEndCoord?: [number, number] | null    // Backend-adjusted end
 }
@@ -97,26 +107,105 @@ The route is rendered using React-Leaflet's `Polyline` component:
 <Polyline
   positions={route}      // Array of [lat, lon] coordinates
   color="blue"           // Route line color
-  weight={5}             // Line width in pixels
+  weight={5}             // Line width in pixels (5 pixels)
   opacity={0.7}          // Line transparency
 />
 ```
 
 The `route` array contains all waypoints returned by the backend API, creating a continuous line along the road network from start to end.
 
+### RouteInfoCard Component
+
+Displays route information and calculated travel times.
+
+**Props:**
+
+```typescript
+interface RouteInfoCardProps {
+  loading: boolean
+  distance: number | null      // in km
+  duration: number | null      // in minutes
+  timeType: 'departure' | 'arrival'
+  selectedTime: string         // HH:MM format
+}
+```
+
+**Features:**
+
+- **Loading State:** Shows "Loading route..." while fetching
+- **Empty State:** Shows placeholder text when no route is available
+- **Route Info Display:** Shows distance, duration, and calculated times
+  - For departure time: Calculates and displays arrival time
+  - For arrival time: Would calculate required departure time (currently disabled)
+- **Time Calculations:** Adds duration to departure time to show estimated arrival
+
+**Example Display:**
+
+```
+Distance: 6.90 km | Duration: 14 minutes
+Departure: 14:30 | Arrival: 14:44
+```
+
+### TimePickerCard and LocationPicker Components
+
+**TimePickerCard** provides a tabbed interface for selecting time type (departure/arrival) and entering the time. The arrival tab is currently disabled.
+
+**LocationPicker** provides buttons and input fields for selecting start and end points on the map. Displays geocoded addresses for selected locations.
+
 ## Backend Integration
+
+### Architecture Overview
+
+The frontend uses a **two-layer architecture** for backend communication:
+
+1. **Client-side service** (`route-api.ts`) - Sends requests to the Next.js API route
+2. **Next.js API route** (`app/api/journey/route.ts`) - Proxies requests to the Elessar backend
+
+This proxy pattern keeps the backend URL server-side and provides additional security and flexibility.
 
 ### API Service (`route-api.ts`)
 
-The frontend communicates with the Elessar backend API through a dedicated service module.
-
-**Base Configuration:**
+The frontend communicates with the backend through the Next.js API route at `/api/journey`:
 
 ```typescript
-const baseUrl = process.env.GROUP11_URL || 'http://localhost:3030'
+export async function fetchRoute(request: RouteRequest): Promise<RouteResponse> {
+  const response = await fetch('/api/journey', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(request),
+  })
+  // ... error handling and response parsing
+}
 ```
 
-The API URL can be configured via environment variable or defaults to localhost.
+### Next.js API Route (`app/api/journey/route.ts`)
+
+The API route proxies requests to the Elessar backend:
+
+```typescript
+export async function POST(request: NextRequest) {
+  const body: RouteRequest = await request.json()
+
+  // Server-side environment variable (not NEXT_PUBLIC_*)
+  const baseUrl = process.env.GROUP11_URL || 'http://localhost:3030'
+
+  const response = await fetch(`${baseUrl}/journey`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+
+  // ... error handling and response forwarding
+}
+```
+
+**Configuration:**
+
+The backend URL is configured via the `GROUP11_URL` environment variable (server-side only, not `NEXT_PUBLIC_*`). It defaults to `http://localhost:3030` if not set.
 
 ### Request Format
 
@@ -172,8 +261,8 @@ interface RouteResponse {
     type: 'LineString'
     coordinates: [number, number][]  // [lat, lon] pairs
   }
-  traversalTime: number  // Seconds
-  length: number         // Meters
+  traversalTime: number  // Travel time in minutes
+  length: number         // Distance in kilometers
 }
 ```
 
@@ -190,8 +279,8 @@ interface RouteResponse {
       [45.760000, 126.650000]
     ]
   },
-  "traversalTime": 840.5,
-  "length": 69
+  "traversalTime": 14,
+  "length": 6.9
 }
 ```
 
@@ -213,7 +302,7 @@ User Interaction
 
 4. Auto-fetch triggered (useEffect)
    ↓
-5. Frontend sends POST request to backend
+5. Frontend sends POST request to Next.js API route at /api/journey
    {
      "start_coordinate": {"lat": 45.755, "lon": 126.637},
      "end_coordinate": {"lat": 45.760, "lon": 126.650},
@@ -221,13 +310,15 @@ User Interaction
      "time": {"hour": 14, "minute": 30}
    }
    ↓
-6. Backend processes request
+6. Next.js API route proxies request to Elessar backend at GROUP11_URL/journey
+   ↓
+7. Backend processes request
    → Snaps coordinates to nearest graph nodes
    → Runs A* pathfinding algorithm
    → Predicts travel times with LSTM model
    → Constructs route LineString
    ↓
-7. Backend returns adjusted route
+8. Backend returns adjusted route to Next.js API route
    {
      "linestring": {
        "type": "LineString",
@@ -238,11 +329,13 @@ User Interaction
          [45.759876, 126.649987]   ← ADJUSTED end (nearest node)
        ]
      },
-     "traversalTime": 840.5,
-     "length": 69
+     "traversalTime": 14,
+     "length": 6.9
    }
    ↓
-8. Frontend updates UI
+9. Next.js API route forwards response to frontend
+   ↓
+10. Frontend updates UI
    → route = linestring.coordinates
    → Start marker moved to route[0] (adjusted position)
    → End marker moved to route[length-1] (adjusted position)
@@ -330,13 +423,37 @@ The map component displays markers at the adjusted positions with helpful popups
 User clicks here:
    ⊗ (45.755000, 126.637000)
    |
-   | Backend finds nearest node
+   | Stored in userStartCoord (triggers API call)
+   | Immediately displayed at startCoord
    ↓
-Marker moves here:
-   ● (45.755123, 126.636901) ← Actual graph node
+Backend finds nearest node
+   ↓
+Marker updates to adjusted position:
+   ● (45.755123, 126.636901) ← Actual graph node (from route[0])
+   |
+   | Stored in startCoord (display only)
 
 Route starts from adjusted position
 ```
+
+### Implementation: Dual Coordinate State
+
+The frontend uses a dual coordinate state system to handle the asynchronous nature of coordinate adjustment:
+
+**User Coordinates (`userStartCoord`, `userEndCoord`):**
+- Set immediately when user clicks the map
+- Used as the source of truth for API requests
+- Triggers the `useEffect` to fetch routes
+
+**Display Coordinates (`startCoord`, `endCoord`):**
+- Initially set to user-clicked position for immediate visual feedback
+- Updated to adjusted positions when route response arrives
+- Used for marker positioning on the map
+
+This separation prevents:
+- **Race conditions:** New marker clicks don't interfere with pending route responses
+- **Flickering:** Markers appear immediately, then smoothly move to adjusted positions
+- **Re-fetch loops:** Route fetching is triggered only by user coordinate changes, not display updates
 
 ### Benefits of This Approach
 
@@ -421,7 +538,7 @@ React-Leaflet's `Polyline` component:
 
 A complete route visualization includes:
 
-1. **Start Marker** (🔴 red pin) - At `route[0]` (adjusted start)
+1. **Start Marker** (🟢 green pin) - At `route[0]` (adjusted start)
 2. **Route Line** (━━━ blue line) - Connecting all waypoints
 3. **End Marker** (🔴 red pin) - At `route[route.length - 1]` (adjusted end)
 
@@ -534,12 +651,14 @@ pub fn isValidTime(self: Time) bool {
 Users can specify whether the entered time represents:
 
 - **DEPARTURE:** "I want to leave at 14:30"
-  - System calculates estimated arrival time
-  - Default option
+  - System calculates estimated arrival time based on predicted travel time
+  - Default and currently active option
+  - UI displays both departure and calculated arrival time
 
 - **ARRIVAL:** "I want to arrive by 18:00"
-  - System calculates when to depart
-  - Currently accepted but may not be fully implemented
+  - Would calculate when to depart to arrive at the specified time
+  - UI tab exists but is currently disabled
+  - Backend API accepts this parameter but frontend has not fully enabled it
 
 ### Time and Travel Time Predictions
 
@@ -595,7 +714,10 @@ Example: A route at 08:00 (rush hour) may take 30 minutes, but the same route at
 - Frontend receives response
 - Markers move to adjusted positions (first/last LineString points)
 - Blue polyline drawn along route
-- Travel time displayed (e.g., "14 minutes")
+- Route info card displays:
+  - Distance in km (e.g., "6.9 km")
+  - Duration in minutes (e.g., "14 minutes")
+  - Calculated departure and arrival times (e.g., "Departure: 14:30 | Arrival: 14:44")
 - Addresses updated with adjusted locations
 
 **Step 8: User Interaction**
@@ -695,10 +817,11 @@ if (!response.ok) {
 
 ```bash
 # .env.local or deployment environment
-NEXT_PUBLIC_GROUP11_URL=http://your-backend-url:3030
+# Server-side only (used by Next.js API route)
+GROUP11_URL=http://your-backend-url:3030
 ```
 
-If not set, defaults to `http://localhost:3030`
+**Important:** Use `GROUP11_URL` (not `NEXT_PUBLIC_GROUP11_URL`) since the API route runs server-side. The environment variable is accessed in `app/api/journey/route.ts` and defaults to `http://localhost:3030` if not set.
 
 ### Development Setup
 
@@ -710,7 +833,7 @@ npm install
 npm run dev
 
 # Application runs on http://localhost:3000
-# Access Group 11 page at http://localhost:3000/group11
+# Access Group 11 page at http://localhost:3000/cs-25-sw-5-11
 ```
 
 ## Technology Stack
@@ -747,7 +870,8 @@ Potential improvements for the frontend include:
 
 **Issue: Route not displaying**
 - Check browser console for errors
-- Verify backend is running on port 3030
+- Verify backend is running and accessible (check GROUP11_URL environment variable)
+- Verify Next.js API route is working (check `/api/journey` endpoint)
 - Confirm coordinates are within Harbin bounds
 - Ensure time format is valid (HH:MM)
 
@@ -773,8 +897,9 @@ Potential improvements for the frontend include:
 ```bash
 # Open browser DevTools (F12)
 # Go to Network tab
-# Filter by "journey" to see API calls
+# Filter by "journey" to see API calls to /api/journey
 # Inspect request/response payloads
+# Note: Frontend calls /api/journey, which then proxies to backend
 ```
 
 **Console Logging:** The application logs useful debug information
@@ -788,7 +913,7 @@ console.log('Route data received:', data)
 ### Request/Response Flow
 
 ```typescript
-// 1. Frontend prepares request
+// 1. Frontend prepares request (route-api.ts)
 const request = {
   start_coordinate: { lat: 45.755, lon: 126.637 },
   end_coordinate: { lat: 45.760, lon: 126.650 },
@@ -796,34 +921,46 @@ const request = {
   time: { hour: 14, minute: 30 }
 }
 
-// 2. Send to backend
-const response = await fetch('http://localhost:3030/journey', {
+// 2. Send to Next.js API route
+const response = await fetch('/api/journey', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify(request)
 })
 
-// 3. Parse response
+// 3. Next.js API route proxies to backend (app/api/journey/route.ts)
+const baseUrl = process.env.GROUP11_URL || 'http://localhost:3030'
+const backendResponse = await fetch(`${baseUrl}/journey`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(request)
+})
+
+// 4. Parse response from Next.js API route
 const data = await response.json()
 // {
 //   linestring: {
 //     type: "LineString",
 //     coordinates: [[lat1,lon1], [lat2,lon2], ...]
 //   },
-//   traversalTime: 840.5,
-//   length: 69
+//   traversalTime: 14,  // minutes
+//   length: 6.9         // km
 // }
 
-// 4. Update UI
+// 5. Update UI
 setRoute(data.linestring.coordinates)  // Draw polyline
 setDuration(data.traversalTime)        // Show travel time
+setDistance(data.length)               // Show distance
 setStartCoord(data.linestring.coordinates[0])      // Adjusted start
 setEndCoord(data.linestring.coordinates[n-1])      // Adjusted end
 ```
 
 ### Key Takeaways
 
-1. **Coordinate Adjustment is Automatic:** Backend always returns adjusted coordinates as first/last LineString points
-2. **LineString is Ready to Render:** Can be directly passed to Leaflet's Polyline component
-3. **No Additional Processing Needed:** Response format is optimized for immediate visualization
-4. **Harbin-Scoped:** All returned coordinates are guaranteed to be within Harbin's road network
+1. **Two-Layer Architecture:** Frontend calls Next.js API route which proxies to Elessar backend
+2. **Server-Side Configuration:** Backend URL is kept server-side for security
+3. **Coordinate Adjustment is Automatic:** Backend always returns adjusted coordinates as first/last LineString points
+4. **LineString is Ready to Render:** Can be directly passed to Leaflet's Polyline component
+5. **No Additional Processing Needed:** Response format is optimized for immediate visualization
+6. **Harbin-Scoped:** All returned coordinates are guaranteed to be within Harbin's road network
+7. **Units:** Distance displayed in km, duration displayed in minutes in the UI

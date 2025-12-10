@@ -48,7 +48,7 @@ const chartTypes = [
     
     useEffect(() => {
         const fetchData = async () => { 
-        const res = await fetch(`http://127.0.0.1:8000/datasets/${datasetId}/records?size=10000`);
+        const res = await fetch(`http://127.0.0.1:8002/datasets/${datasetId}/records?size=10000`);
         const apiData: ApiResponse = await res.json();
         setChartData(convertApiDataToChartFormat(apiData));
     }
@@ -59,7 +59,7 @@ const chartTypes = [
         const fetchMetadata = async () => {
             try {
                 setIsLoadingMetadata(true);
-                const res = await fetch(`http://127.0.0.1:8000/datasets/${datasetId}`);
+                const res = await fetch(`http://127.0.0.1:8002/datasets/${datasetId}`);
                 const data: DatasetMetadata = await res.json();
                 setMetadata(data);
             } catch (error) {

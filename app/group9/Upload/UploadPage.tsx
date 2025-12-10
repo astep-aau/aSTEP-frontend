@@ -77,7 +77,9 @@ export default function UploadPage() {
     try {
       // Read the file as text
       const csvText = await selectedFile.text();
-      console.log(csvText);
+      console.log(
+        `http://127.0.0.1:8002/datasets?name=${encodeURIComponent(datasetName.trim())}&start_date=${new Date().toISOString()}`,
+      );
 
       // Send name as query parameter and CSV as raw body
       const response = await fetch(
@@ -85,7 +87,7 @@ export default function UploadPage() {
         {
           method: "POST",
           headers: {
-            "Content-Type": "text/plain",
+            "Content-Type": "application/octet-stream",
           },
           body: csvText,
         },
@@ -117,7 +119,7 @@ export default function UploadPage() {
   const clearFile = () => {
     setSelectedFile(null);
   };
-  
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-6 py-8 max-w-6xl">

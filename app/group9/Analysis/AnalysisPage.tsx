@@ -20,7 +20,7 @@ export default function AnalysisPage() {
       return;
     }
     
-    console.log('Starting outlier detection with:', selectedOption);
+    console.log('Starting forecasting with:', selectedOption);
   };
 
   const handleLocationSelect = (loc: { name: string }) => {

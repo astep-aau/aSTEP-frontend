@@ -27,7 +27,8 @@ export function RouteInfoCard({ loading, distance, duration, timeType, selectedT
       const [hours, minutes] = selectedTime.split(':').map(Number)
       if (isNaN(hours) || isNaN(minutes)) return null
 
-      const durationMinutes = Math.round(duration)
+      // Convert duration from seconds to minutes
+      const durationMinutes = Math.round(duration / 60)
 
       if (timeType === 'departure') {
         // Given departure time, calculate arrival
@@ -61,7 +62,7 @@ export function RouteInfoCard({ loading, distance, duration, timeType, selectedT
         <CardContent className="py-6 text-center">
           <div className="text-sm sm:text-base md:text-lg lg:text-xl text-green-900 dark:text-green-100 space-y-2">
             <div>
-              <strong>Distance:</strong> {distance.toFixed(2)} km | <strong>Duration:</strong> {duration.toFixed(0)} minutes
+              <strong>Distance:</strong> {distance.toFixed(2)} km | <strong>Duration:</strong> {(duration / 60).toFixed(0)} minutes
             </div>
             {times && (
               <div>

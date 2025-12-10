@@ -1,4 +1,4 @@
-import { RoutePlanner, ServiceExample } from "./components/index";
+import { RoutePlanner } from "./components/index";
 
 export const dynamic = 'force-dynamic';
 

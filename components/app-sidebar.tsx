@@ -25,19 +25,14 @@ const items = [
     icon: Home,
   },
   {
-    title: "Group 2",
-    url: "/group2",
-    icon: Users,
-  },
-  {
     title: "Group 6",
     url: "/group6",
     icon: Users,
   },
   {
-    title: "Group 9",
-    url: "/group9",
-    icon: Users,
+    title: "Time Series",
+    url: "/time-series",
+    icon: Clock,
   },
 ]
 

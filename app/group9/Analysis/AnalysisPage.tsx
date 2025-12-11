@@ -20,6 +20,8 @@ export default function AnalysisPage() {
       return;
     }
     
+    
+
     console.log('Starting forecasting with:', selectedOption);
   };
 
@@ -70,7 +72,7 @@ export default function AnalysisPage() {
           <Card>
             <CardHeader>
               <CardTitle>Forecasting</CardTitle>
-              <CardDescription>Choose a forecasting model</CardDescription>
+              <CardDescription>Choose for how long you would like to predict energy usage:</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-3">
@@ -78,15 +80,15 @@ export default function AnalysisPage() {
                 <div className="flex items-center space-x-3">
                   <input
                     type="radio"
-                    id="option1"
+                    id="15min"
                     name="Forecasting energy"
-                    value="option1"
-                    checked={selectedOption === 'option1'}
+                    value="15min"
+                    checked={selectedOption === '15min'}
                     onChange={(e) => handleForecastOption(e.target.value)}
                     className="w-4 h-4"
                   />
-                  <label htmlFor="option4" className="cursor-pointer font-normal">
-                    Option 1
+                  <label htmlFor="15min" className="cursor-pointer font-normal">
+                    15 minutes
                   </label>
               </div>
 
@@ -94,15 +96,15 @@ export default function AnalysisPage() {
                 <div className="flex items-center space-x-3">
                   <input
                     type="radio"
-                    id="option2"
+                    id="30min"
                     name="outlier-method"
-                    value="option2"
-                    checked={selectedOption === 'option2'}
+                    value="30min"
+                    checked={selectedOption === '30min'}
                     onChange={(e) => handleForecastOption(e.target.value)}
                     className="w-4 h-4"
                   />
-                  <label htmlFor="option2" className="cursor-pointer font-normal">
-                    Option 2
+                  <label htmlFor="30min" className="cursor-pointer font-normal">
+                    30 minutes
                   </label>
                 </div>
 
@@ -110,15 +112,15 @@ export default function AnalysisPage() {
                 <div className="flex items-center space-x-3">
                   <input
                     type="radio"
-                    id="option3"
+                    id="60min"
                     name="outlier-method"
-                    value="option3"
-                    checked={selectedOption === 'option3'}
+                    value="60min"
+                    checked={selectedOption === '60min'}
                     onChange={(e) => handleForecastOption(e.target.value)}
                     className="w-4 h-4"
                   />
-                  <label htmlFor="option3" className="cursor-pointer font-normal">
-                    Option 3
+                  <label htmlFor="60min" className="cursor-pointer font-normal">
+                    1 hour
                   </label>
                 </div>
               </div>

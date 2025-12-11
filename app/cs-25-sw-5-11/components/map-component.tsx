@@ -142,7 +142,12 @@ export function MapComponent({
   clientStartCoord,
   clientEndCoord
 }: MapComponentProps) {
-  const { theme } = useTheme()
+  const { theme, resolvedTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const getCursorClass = () => {
     if (markerMode === 'start') return styles.startMarkerCursor
@@ -150,8 +155,12 @@ export function MapComponent({
     return ''
   }
 
+  // Use resolvedTheme to handle 'system' theme setting
+  const currentTheme = mounted ? (resolvedTheme || theme) : 'light'
+  const isDark = currentTheme === 'dark'
+
   return (
-    <div className={`${className} ${theme === 'dark' ? styles.darkMap : ''} ${getCursorClass()}`}>
+    <div className={`${className} ${isDark ? styles.darkMap : ''} ${getCursorClass()}`}>
       <MapContainer
         center={center}
         zoom={zoom}
@@ -159,9 +168,10 @@ export function MapComponent({
         className="h-full w-full rounded-lg"
       >
         <TileLayer
+          key={currentTheme}
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
           url={
-            theme === 'dark'
+            isDark
               ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
               : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
           }

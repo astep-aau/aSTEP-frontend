@@ -24,7 +24,7 @@ export function LocationPicker({
           onClick={() => onMarkerModeChange('start')}
           variant={markerMode === 'start' ? 'default' : 'outline'}
           size="icon"
-          className={markerMode === 'start' ? 'bg-green-600 hover:bg-green-700' : ''}
+          className={markerMode === 'start' ? 'bg-green-600 hover:bg-green-700 cursor-pointer' : 'hover:bg-green-600 hover:text-white cursor-pointer'}
           title="Set start point"
         >
           <MapPin className="h-4 w-4" />
@@ -42,7 +42,7 @@ export function LocationPicker({
           onClick={() => onMarkerModeChange('end')}
           variant={markerMode === 'end' ? 'default' : 'outline'}
           size="icon"
-          className={markerMode === 'end' ? 'bg-red-600 hover:bg-red-700' : ''}
+          className={markerMode === 'end' ? 'bg-red-600 hover:bg-red-700 cursor-pointer' : 'hover:bg-red-600 hover:text-white cursor-pointer'}
           title="Set end point"
         >
           <MapPin className="h-4 w-4" />

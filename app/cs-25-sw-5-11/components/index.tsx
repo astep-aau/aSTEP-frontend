@@ -156,14 +156,19 @@ export function RoutePlanner({
 					time: timeConfig,
 				})
 
-				setRoute(data.linestring.coordinates)
+				// Convert API coordinates from [lat, lon] to [lon, lat] i.e. (GeoJSON format)
+				const convertedRoute = data.linestring.coordinates.map(
+					(coord): [number, number] => [coord[1], coord[0]]
+				)
+
+				setRoute(convertedRoute)
 				setDistance(data.length)
 				setDuration(data.traversalTime)
 
 				// Use linestring endpoints as the adjusted coordinates
-				if (data.linestring.coordinates.length > 0) {
-					const routeStart = data.linestring.coordinates[0]
-					const routeEnd = data.linestring.coordinates[data.linestring.coordinates.length - 1]
+				if (convertedRoute.length > 0) {
+					const routeStart = convertedRoute[0]
+					const routeEnd = convertedRoute[convertedRoute.length - 1]
 
 					// Update display coordinates to match server-adjusted positions
 					// This prevents flickering when placing a new marker

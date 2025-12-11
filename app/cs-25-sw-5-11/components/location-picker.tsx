@@ -24,7 +24,7 @@ export function LocationPicker({
           onClick={() => onMarkerModeChange('start')}
           variant={markerMode === 'start' ? 'default' : 'outline'}
           size="icon"
-          className={markerMode === 'start' ? 'bg-green-600 hover:bg-green-700' : ''}
+          className={markerMode === 'start' ? 'bg-green-600 hover:bg-green-700 cursor-pointer' : 'hover:!bg-green-600 hover:!text-white hover:!border-green-600 cursor-pointer transition-colors'}
           title="Set start point"
         >
           <MapPin className="h-4 w-4" />
@@ -34,7 +34,8 @@ export function LocationPicker({
           value={startAddress}
           placeholder="Click marker button, then click map to set start point"
           readOnly
-          className="flex-1"
+          className="flex-1 cursor-not-allowed pointer-events-auto select-text"
+          onFocus={(e) => e.target.blur()}
         />
       </div>
       <div className="flex gap-3 items-center">
@@ -42,7 +43,7 @@ export function LocationPicker({
           onClick={() => onMarkerModeChange('end')}
           variant={markerMode === 'end' ? 'default' : 'outline'}
           size="icon"
-          className={markerMode === 'end' ? 'bg-red-600 hover:bg-red-700' : ''}
+          className={markerMode === 'end' ? 'bg-red-600 hover:bg-red-700 cursor-pointer' : 'hover:!bg-red-600 hover:!text-white hover:!border-red-600 cursor-pointer transition-colors'}
           title="Set end point"
         >
           <MapPin className="h-4 w-4" />
@@ -52,7 +53,8 @@ export function LocationPicker({
           value={endAddress}
           placeholder="Click marker button, then click map to set end point"
           readOnly
-          className="flex-1"
+          className="flex-1 cursor-not-allowed pointer-events-auto select-text"
+          onFocus={(e) => e.target.blur()}
         />
       </div>
     </div>

@@ -32,7 +32,7 @@ const items = [
   {
     title: "Time Series",
     url: "/time-series",
-    icon: Users,
+    icon: Clock,
   },
 ]
 

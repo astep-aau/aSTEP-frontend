@@ -87,30 +87,10 @@ function RouteHandler({
 		<>
 			{displayStartCoord && (
 				<Marker position={displayStartCoord} icon={startIcon}>
-					{/* <Popup> */}
-					{/*   <div> */}
-					{/*     <h3 className="font-semibold">Start Point</h3> */}
-					{/*     {adjustedStartCoord && ( */}
-					{/*       <p className="text-xs text-gray-600 mt-1"> */}
-					{/*         Adjusted to nearest graph node */}
-					{/*       </p> */}
-					{/*     )} */}
-					{/*   </div> */}
-					{/* </Popup> */}
 				</Marker>
 			)}
 			{displayEndCoord && (
 				<Marker position={displayEndCoord} icon={endIcon}>
-					{/* <Popup> */}
-					{/* 	<div> */}
-					{/* 		<h3 className="font-semibold">End Point</h3> */}
-					{/* 		{adjustedEndCoord && ( */}
-					{/* 			<p className="text-xs text-gray-600 mt-1"> */}
-					{/* 				Adjusted to nearest graph node */}
-					{/* 			</p> */}
-					{/* 		)} */}
-					{/* 	</div> */}
-					{/* </Popup> */}
 				</Marker>
 			)}
 		</>

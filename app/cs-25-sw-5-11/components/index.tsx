@@ -156,7 +156,7 @@ export function RoutePlanner({
 					time: timeConfig,
 				})
 
-				// Convert API coordinates from [lon, lat] to [lat, lon] for Leaflet
+				// Convert API coordinates from [lat, lon] to [lon, lat] i.e. (GeoJSON format)
 				const convertedRoute = data.linestring.coordinates.map(
 					(coord): [number, number] => [coord[1], coord[0]]
 				)

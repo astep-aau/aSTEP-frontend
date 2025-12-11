@@ -34,7 +34,8 @@ export function LocationPicker({
           value={startAddress}
           placeholder="Click marker button, then click map to set start point"
           readOnly
-          className="flex-1"
+          className="flex-1 cursor-not-allowed pointer-events-auto select-text"
+          onFocus={(e) => e.target.blur()}
         />
       </div>
       <div className="flex gap-3 items-center">
@@ -52,7 +53,8 @@ export function LocationPicker({
           value={endAddress}
           placeholder="Click marker button, then click map to set end point"
           readOnly
-          className="flex-1"
+          className="flex-1 cursor-not-allowed pointer-events-auto select-text"
+          onFocus={(e) => e.target.blur()}
         />
       </div>
     </div>

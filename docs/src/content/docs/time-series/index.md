@@ -1,8 +1,7 @@
 ---
-title: Group 9 - Docs
-description: Documentation for Group 9
+title: Time-Series - Docs
+description: Documentation for Time-Series Outlier Detection & Forecasting
 ---
 
-Group 9 is focusing on Outlier Detection and this is the documentation for their work.
-
-
+Time-Series supergroup is focusing on Outlier Detection & Forecasting
+and this is the documentation for their work.

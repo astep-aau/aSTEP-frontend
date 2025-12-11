@@ -144,8 +144,14 @@ export function MapComponent({
 }: MapComponentProps) {
   const { theme } = useTheme()
 
+  const getCursorClass = () => {
+    if (markerMode === 'start') return styles.startMarkerCursor
+    if (markerMode === 'end') return styles.endMarkerCursor
+    return ''
+  }
+
   return (
-    <div className={`${className} ${theme === 'dark' ? styles.darkMap : ''}`}>
+    <div className={`${className} ${theme === 'dark' ? styles.darkMap : ''} ${getCursorClass()}`}>
       <MapContainer
         center={center}
         zoom={zoom}

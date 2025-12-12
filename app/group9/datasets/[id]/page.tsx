@@ -133,7 +133,6 @@ return (
     <div className="min-h-screen bg-background">
     <main className="max-w-6xl mx-auto px-6 py-8">
         <h1 className="text-3xl font-semibold mb-2">Details for {metadata?.name}</h1>
-        <p className="text-sm text-muted-foreground mb-6">Dataset ID: {id}</p>
 
         <div className="grid grid-cols-1 gap-6">
           {/* Dataset Visualization Card */}

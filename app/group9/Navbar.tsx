@@ -19,7 +19,7 @@ export default function Navbar() {
                 <div className="container mx-auto px-6 max-w-6xl">
                     <div className="flex justify-between items-center py-4">
                         <div className="flex items-center space-x-8">
-                            <span className="text-lg font-bold text-foreground">aSTEP Time Series</span>
+                            <Link href="/group9"><span className="text-lg font-bold text-foreground">aSTEP Time Series</span></Link>
                             
                             {/* Navigation Links */}
                             <div className="hidden sm:flex space-x-6">

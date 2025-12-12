@@ -83,17 +83,15 @@ const [isLoadingAnomalies, setIsLoadingAnomalies] = useState(false);
                 const data = await res.json();
                 console.log('Fetched analyses data:', data);
                 
-                // Handle different response formats
                 const analysesArray = Array.isArray(data) ? data : (data.analyses || []);
                 setAnalyses(analysesArray);
                 
-                // Select the first analysis by default if available
                 if (analysesArray.length > 0) {
                     setSelectedAnalysisId(analysesArray[0].id.toString());
                 }
             } catch (error) {
                 console.error('Error fetching analyses:', error);
-                setAnalyses([]); // Ensure analyses is always an array
+                setAnalyses([]);
             } finally {
                 setIsLoadingAnalyses(false);
             }
@@ -109,7 +107,6 @@ const [isLoadingAnomalies, setIsLoadingAnomalies] = useState(false);
                 setIsLoadingAnomalies(true);
                 const res = await fetch(`http://127.0.0.1:8000/analyses/${selectedAnalysisId}`);
                 const data = await res.json();
-                // API returns paginated response with items array
                 setAnomalyRanges(data.items || []);
             } catch (error) {
                 console.error('Error fetching anomaly ranges:', error);

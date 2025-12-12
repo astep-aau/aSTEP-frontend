@@ -17,6 +17,18 @@ interface DatasetMetadata {
     end_datetime: string | null;
 }
 
+interface Analysis {
+    id: number;
+    name: string;
+    dataset_id: number;
+    created_at: string;
+}
+
+interface AnomalyRange {
+    start: string;
+    end: string;
+}
+
 export default function MyDetailPage() {
 const searchParams = useSearchParams();
 const datasetName = searchParams.get('name') || 'Dataset';
@@ -29,22 +41,14 @@ const convertApiDataToChartFormat = (apiResponse: ApiResponse): ChartDataItem[] 
     }))
 }
 
-const anomalyRanges = [
-    { start: "2024-01-01T12:00:00", end: "2024-01-01T12:30:00" },
-];
-
 const [chartData, setChartData] = useState<ChartDataItem[]>([]);
 const [metadata, setMetadata] = useState<DatasetMetadata | null>(null);
 const [isLoadingMetadata, setIsLoadingMetadata] = useState(true);
-const [selectedChartType, setSelectedChartType] = useState('time-series');
-
-const chartTypes = [
-    { value: 'time-series', label: 'Time Series' },
-    { value: 'histogram', label: 'Histogram' },
-    { value: 'scatter', label: 'Scatter Plot' },
-    { value: 'box-plot', label: 'Box Plot' },
-    { value: 'heatmap', label: 'Heatmap' },
-];
+const [analyses, setAnalyses] = useState<Analysis[]>([]);
+const [selectedAnalysisId, setSelectedAnalysisId] = useState<string>('');
+const [anomalyRanges, setAnomalyRanges] = useState<AnomalyRange[]>([]);
+const [isLoadingAnalyses, setIsLoadingAnalyses] = useState(true);
+const [isLoadingAnomalies, setIsLoadingAnomalies] = useState(false);
     
     useEffect(() => {
         const fetchData = async () => { 
@@ -71,6 +75,52 @@ const chartTypes = [
         fetchMetadata();
     }, [datasetId]);
 
+    useEffect(() => {
+        const fetchAnalyses = async () => {
+            try {
+                setIsLoadingAnalyses(true);
+                const res = await fetch(`http://127.0.0.1:8000/datasets/${datasetId}/analyses`);
+                const data = await res.json();
+                console.log('Fetched analyses data:', data);
+                
+                // Handle different response formats
+                const analysesArray = Array.isArray(data) ? data : (data.analyses || []);
+                setAnalyses(analysesArray);
+                
+                // Select the first analysis by default if available
+                if (analysesArray.length > 0) {
+                    setSelectedAnalysisId(analysesArray[0].id.toString());
+                }
+            } catch (error) {
+                console.error('Error fetching analyses:', error);
+                setAnalyses([]); // Ensure analyses is always an array
+            } finally {
+                setIsLoadingAnalyses(false);
+            }
+        }
+        fetchAnalyses();
+    }, [datasetId]);
+
+    useEffect(() => {
+        const fetchAnomalyRanges = async () => {
+            if (!selectedAnalysisId) return;
+            
+            try {
+                setIsLoadingAnomalies(true);
+                const res = await fetch(`http://127.0.0.1:8000/analyses/${selectedAnalysisId}`);
+                const data = await res.json();
+                // API returns paginated response with items array
+                setAnomalyRanges(data.items || []);
+            } catch (error) {
+                console.error('Error fetching anomaly ranges:', error);
+                setAnomalyRanges([]);
+            } finally {
+                setIsLoadingAnomalies(false);
+            }
+        }
+        fetchAnomalyRanges();
+    }, [selectedAnalysisId]);
+
     const formatDateTime = (dateString: string | null) => {
         if (!dateString) return 'N/A';
         return new Date(dateString).toLocaleString('en-US', {
@@ -96,33 +146,38 @@ return (
                     <CardTitle>Dataset Visualization</CardTitle>
                     <CardDescription>Visual representation of your time series data</CardDescription>
                 </div>
-                {/* Chart Type Selector */}
+                {/* Analysis Selector */}
                 <div className="min-w-[200px]">
-                    <label className="text-sm font-medium mb-2 block">Chart Type</label>
+                    <label className="text-sm font-medium mb-2 block">Analysis</label>
                     <select
-                        value={selectedChartType}
-                        onChange={(e) => setSelectedChartType(e.target.value)}
+                        value={selectedAnalysisId}
+                        onChange={(e) => setSelectedAnalysisId(e.target.value)}
                         className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                        disabled={isLoadingAnalyses || analyses.length === 0}
                     >
-                        {chartTypes.map((type) => (
-                            <option key={type.value} value={type.value}>
-                                {type.label}
-                            </option>
-                        ))}
+                        {isLoadingAnalyses ? (
+                            <option>Loading analyses...</option>
+                        ) : analyses.length === 0 ? (
+                            <option>No analyses available</option>
+                        ) : (
+                            analyses.map((analysis) => (
+                                <option key={analysis.id} value={analysis.id}>
+                                    {analysis.name}
+                                </option>
+                            ))
+                        )}
                     </select>
                 </div>
             </div>
             </CardHeader>
             <CardContent>
             <div className="w-full">
-                {selectedChartType === 'time-series' ? (
-                    <TimeSeriesChart chartData={chartData} anomalyRanges={anomalyRanges} />
-                ) : (
+                {isLoadingAnomalies ? (
                     <div className="bg-muted rounded-lg border border-border min-h-[400px] flex items-center justify-center">
-                        <p className="text-muted-foreground">
-                            {chartTypes.find(t => t.value === selectedChartType)?.label} visualization will appear here
-                        </p>
+                        <p className="text-muted-foreground">Loading anomaly data...</p>
                     </div>
+                ) : (
+                    <TimeSeriesChart chartData={chartData} anomalyRanges={anomalyRanges} />
                 )}
             </div>
 

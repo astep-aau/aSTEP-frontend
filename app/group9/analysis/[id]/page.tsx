@@ -1,19 +1,27 @@
 "use client";
 
-import { useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 export default function AnalysisPage() {
-  const searchParams = useSearchParams();
-  const datasetName = searchParams.get('name') || 'Datasets';
+  const { id } = useParams();
   const [selectedOption, setSelectedOption] = useState('option1');
-
+  const [datasetName, setDatasetName] = useState<string>('');
   const handleStartAnalysis = () => {
     console.log('Starting outlier detection with:', selectedOption);
   };
 
+  useEffect(() => {
+    const response = async () => {
+      const res = await fetch(`http://127.0.0.1:8000/datasets/${id}`);
+      const data = await res.json();
+      setDatasetName(data.name);
+    };
+    response();
+  }, [id]);
+  
   return (
     <div className="min-h-screen bg-background">
       <main className="max-w-6xl mx-auto px-6 py-8">

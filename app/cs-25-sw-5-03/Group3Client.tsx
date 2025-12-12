@@ -49,7 +49,11 @@ interface BackendRequestData {
     CorrelationId: string;
 }
 
-export default function Group3Page() {
+interface Group3ClientProps {
+    backendUrl: string;
+}
+
+export default function Group3Page({ backendUrl}: Group3ClientProps) {
 
     // TODO: Skal hentes fra database
     const modelVersions = ["LSTM 1.01", "LSTM 1.1", "LSTM 2.0 (Experimental)"]; 
@@ -115,6 +119,7 @@ export default function Group3Page() {
     const sendDataToBackend = async (backendUrl: string, dataToSend: BackendRequestData ): Promise<void> => {
       try{
         log.info("Sending data to backend:", dataToSend);
+        log.info("This is the route/endoint", backendUrl);
         const response = await fetch(backendUrl, {
             method: 'POST',
             headers: {
@@ -171,8 +176,11 @@ export default function Group3Page() {
                     setRouteData(route);
 
                     const totalMinutes = responseData.travelTimeMinutes || 0;
-                    const hours = Math.floor(totalMinutes / 60);
-                    const minutes = Math.floor(totalMinutes % 60);
+                    let hours = 0;
+                    if (totalMinutes >= 60) {
+                        hours = Math.floor(totalMinutes / 60);
+                    }
+                    const minutes = Math.ceil(totalMinutes);
                     setEstimatedTime(prev => ({
                         ...prev,
                         hours: hours,
@@ -253,7 +261,11 @@ export default function Group3Page() {
                 };
 
             // Change the URLs to fit actual location when server is setup
-            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://translator-service.cs-25-sw-5-03.svc.cluster.local'; // Delete fallback when deployed
+            const baseUrl = backendUrl;
+            if (!baseUrl) {
+                throw new Error("Backend URL is not defined.");
+            }
+
             const backendUrlPost = `${baseUrl}/api/processes`;
             const backendUrlGet = `${baseUrl}/api/route?correlationId=${correlationId}`;
 

@@ -19,7 +19,7 @@ import { Separator } from "@/components/ui/separator";
 import { MapPin, CircleQuestionMark } from "lucide-react";
 import { IconButton } from "./iconButton";
 import { FormEvent } from "react";
-import { EstimatedTimeState } from "./page";
+import { EstimatedTimeState } from "./Group3Client";
 import { Input } from '@/components/ui/input';
 import { Display } from "./display";
 import { flushSync } from "react-dom";

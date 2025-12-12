@@ -16,6 +16,7 @@ export default defineConfig({
           items: [
             // Each item here is one entry in the navigation menu.
             { label: 'Overview', slug: 'cross-group' },
+            { label: 'Frontend', slug: 'cross-group/frontend' },
           ],
         },
         {
@@ -31,14 +32,12 @@ export default defineConfig({
             // Each item here is one entry in the navigation menu.
             { label: 'Overview', slug: 'group-3' },
             { label: 'Project Architecture', slug: 'group-3/project-architecture' },
-            { label: 'LSTM Model', slug: 'group-3/lstm-model' },
-            { label: 'Edge Embeddings', slug: 'group-3/edge-embeddings' },
             { label: 'Frontend to Backend Communication', slug: 'group-3/frontend-backend-communication' },
-            { label: 'RabbitMQ', slug: 'group-3/rabbitmq' },
             { label: 'State Service', slug: 'group-3/state-service' },
             { label: 'Translator Service', slug: 'group-3/translator-service' },
-            {label: 'Route Estimation Service', slug: 'group-3/route-estimation-service' },
+            { label: 'Route Estimation Service', slug: 'group-3/route-estimation-service' },
             { label: 'Training Service', slug: 'group-3/training-service' },
+            { label: 'AI-Lab', slug: 'group-3/ailab' },
           ],
         },
         {
@@ -60,6 +59,9 @@ export default defineConfig({
           items: [
             // Each item here is one entry in the navigation menu.
             { label: 'Overview', slug: 'group-11' },
+            { label: 'System Architecture', slug: 'group-11/architecture' },
+            { label: 'Web API', slug: 'group-11/web-api' },
+            { label: 'Frontend', slug: 'group-11/frontend' },
             { label: 'Map Matching', slug: 'group-11/map-matching' },
             { label: 'Model', slug: 'group-11/model' },
             { label: 'Pathfinding', slug: 'group-11/pathfinding' },

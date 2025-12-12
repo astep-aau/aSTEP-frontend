@@ -1,4 +1,7 @@
-import { Users, Home, BookText } from "lucide-react"
+"use client"
+
+import { Users, Home, BookText, Clock, ChevronDown } from "lucide-react"
+import { useState, useEffect } from "react"
 
 import {
   Sidebar,
@@ -9,6 +12,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
 } from "@/components/ui/sidebar"
 
 // Menu items.
@@ -24,11 +30,6 @@ const items = [
     icon: Users,
   },
   {
-    title: "Group 3",
-    url: "/group3",
-    icon: Users,
-  },
-  {
     title: "Group 6",
     url: "/group6",
     icon: Users,
@@ -38,19 +39,37 @@ const items = [
     url: "/group9",
     icon: Users,
   },
+]
+
+const timeTravelItems = [
   {
-    title: "Group 11",
-    url: "/group11",
-    icon: Users,
+    title: "cs-25-sw-5-03",
+    url: "/cs-25-sw-5-03",
   },
   {
-    title: "aSTEP Docs",
-    url: "/docs",
-    icon: BookText,
+    title: "cs-25-sw-5-11",
+    url: "/cs-25-sw-5-11",
   },
 ]
 
 export function AppSidebar() {
+  const [isTimeTravelOpen, setIsTimeTravelOpen] = useState(false)
+
+  // Load the state from localStorage on mount
+  useEffect(() => {
+    const savedState = localStorage.getItem('timeTravelDropdownOpen')
+    if (savedState !== null) {
+      setIsTimeTravelOpen(savedState === 'true')
+    }
+  }, [])
+
+  // Save the state to localStorage whenever it changes
+  const toggleTimeTravelOpen = () => {
+    const newState = !isTimeTravelOpen
+    setIsTimeTravelOpen(newState)
+    localStorage.setItem('timeTravelDropdownOpen', String(newState))
+  }
+
   return (
     <Sidebar>
       <SidebarContent>
@@ -68,6 +87,37 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={toggleTimeTravelOpen}
+                  className="cursor-pointer"
+                >
+                  <Clock />
+                  <span>Time Travel Estimation</span>
+                  <ChevronDown className={`ml-auto transition-transform ${isTimeTravelOpen ? 'rotate-180' : ''}`} />
+                </SidebarMenuButton>
+                {isTimeTravelOpen && (
+                  <SidebarMenuSub>
+                    {timeTravelItems.map((item) => (
+                      <SidebarMenuSubItem key={item.title}>
+                        <SidebarMenuSubButton asChild>
+                          <a href={item.url}>
+                            <span>{item.title}</span>
+                          </a>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    ))}
+                  </SidebarMenuSub>
+                )}
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <a href="/docs">
+                    <BookText />
+                    <span>aSTEP Docs</span>
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

@@ -159,7 +159,7 @@ return (
                             <option>No analyses available</option>
                         ) : (
                             <>
-                                <option value="">Default analysis</option>
+                                <option value="">Choose...</option>
                                 {analyses.map((analysis) => (
                                     <option key={analysis.id} value={analysis.id.toString()}>
                                         {analysis.name}

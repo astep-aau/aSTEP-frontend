@@ -48,41 +48,41 @@ export function Display({ time, error, loading }: DisplayProps) {
     };
 
     return (
-        <div className="p-4 w-full text-center">
+        <div className="p-2 w-full text-center">
             {error ? (
                 /* Show all validation/API errors */
                 renderErrors(error)
-            ) : (
+            ) : (   
                 <>
-                    {/* Loading Spinner Section - shown while time calculation is in progress */}
+                    {/* Loading Spinner Section - shown while calculation is in progress */}
                     {loading ? (
                         <div className="flex items-center justify-center rounded-lg mb-3">
-                            <Loader2 className="h-6 w-6 animate-spin" />
-                            <span className="ml-3 text-lg font-medium">Calculating time...</span>
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                            <span className="ml-3 text-xs font-semibold">Predicting route information...</span>
                         </div>
-                    ) : time.hours !== null ? (
-                        /* Travel Time Display - shown when calculation completes */
+                    ) : time.hours !== null || time.distanceKm !== null ? (
+                        /* Travel Time and Distance Display - shown when calculation completes */
                         <>
-                            <h3 className="text-xl font-bold mb-1">
-                                {`${time.hours}h ${time.minutes ?? 0}m`}
-                            </h3>
-                            <p className="text-sm italic">Time in hours, minutes</p>
+                            {time.hours !== null && (
+                                <div className={"py-2"}>
+                                    <h3 className="text-xl font-semibold">
+                                        {`${time.hours}h ${time.minutes ?? 0}m`}
+                                    </h3>
+                                    <p className="text-xs">Time to traverse</p>
+                                </div>
+                            )}
+                            {time.distanceKm !== null && (
+                                <div>
+                                    <p className="text-xl font-semibold">
+                                        {`${time.distanceKm.toFixed(2)} km`}
+                                    </p>
+                                    <p className="text-xs">Distance of route</p>
+                                </div>
+                            )}
                         </>
-                    ) : !time.distanceKm ? (
-                        /* Placeholder Text - only shown when nothing has been calculated yet */
-                        <p className="text-sm p-7">Enter route details and click Calculate</p>
-                    ) : null}
-
-                    {/* Distance Display - shown immediately when available (even during loading)
-                        Distance is typically received before time calculation completes,
-                        so we show it independently to improve UX */}
-                    {time.distanceKm !== null && (
-                        <div className="mt-3">
-                            <p className="text-lg font-semibold">
-                                {`${time.distanceKm.toFixed(2)} km`}
-                            </p>
-                            <p className="text-xs">Distance</p>
-                        </div>
+                    ) : (
+                        /* Placeholder Text - shown when no calculation has been done yet */
+                        <p className="italic">Enter details and calculate to see travel time and distance.</p>
                     )}
                 </>
             )}

@@ -1,23 +1,11 @@
+---
+title: Training Service
+description: Documentation for the Training Service in Group 3
+---
+
 # Training Service
 
 A hybrid C#/.NET and Python microservice for training LSTM-based Travel Time Estimation (TTE) models. The service orchestrates ML model training pipelines by generating training datasets from road network data, computing edge vector embeddings, and training neural networks to predict route traversal times.
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Prerequisites](#prerequisites)
-- [Project Structure](#project-structure)
-- [C# Backend](#c-backend)
-- [Python Backend](#python-backend)
-- [Required Data Files](#required-data-files)
-- [Configuration](#configuration)
-- [API Reference](#api-reference)
-- [Workflow](#workflow)
-- [Troubleshooting](#troubleshooting)
-- [Performance Considerations](#performance-considerations)
-
----
 
 ## Overview
 
@@ -30,20 +18,6 @@ The Training Service is responsible for:
 5. **Model Inference** - Predicting travel times for new routes using trained models
 
 The service uses a two-tier architecture where a C# ASP.NET Core API handles request orchestration, job queuing, and authentication, while a Python FastAPI backend performs the computationally intensive ML operations.
-
----
-
-## Prerequisites
-
-### .NET (C# Backend)
-
-- **.NET SDK**: 9.0 or later
-- **Runtime**: ASP.NET Core 9.0
-
-### Python (Python Backend)
-
-- **Python**: 3.11 or later
-- **Package Manager**: pip
 
 ---
 

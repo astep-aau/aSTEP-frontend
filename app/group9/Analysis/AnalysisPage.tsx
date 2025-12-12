@@ -19,10 +19,10 @@ export default function AnalysisPage() {
       alert("Forecast needs a location to function");
       return;
     }
-    
-    
 
-    console.log('Starting forecasting with:', selectedOption);
+    console.log('Predicting energy for the next', selectedOption);
+  
+  
   };
 
   const handleLocationSelect = (loc: { name: string }) => {

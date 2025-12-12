@@ -23,9 +23,13 @@ const datasetName = searchParams.get('name') || 'Dataset';
 const datasetId = searchParams.get('id') || 'Unknown';
 
 const convertApiDataToChartFormat = (apiResponse: ApiResponse): ChartDataItem[] => {
+    if (!apiResponse || !apiResponse.items || !Array.isArray(apiResponse.items)) {
+        console.error('Invalid API response:', apiResponse);
+        return [];
+    }
     return apiResponse.items.map((item) => ({
-    date: item.time,
-    value: item.value
+        date: item.time,
+        value: item.value
     }))
 }
 
@@ -48,11 +52,19 @@ const chartTypes = [
     
     useEffect(() => {
         const fetchData = async () => { 
-        const res = await fetch(`http://127.0.0.1:8002/datasets/${datasetId}/records?size=10000`);
-        const apiData: ApiResponse = await res.json();
-        setChartData(convertApiDataToChartFormat(apiData));
-    }
-    fetchData();
+            try {
+                const res = await fetch(`http://127.0.0.1:8002/datasets/${datasetId}/records?size=10000`);
+                if (!res.ok) {
+                    throw new Error(`API error: ${res.status} ${res.statusText}`);
+                }
+                const apiData: ApiResponse = await res.json();
+                setChartData(convertApiDataToChartFormat(apiData));
+            } catch (error) {
+                console.error('Error fetching chart data:', error);
+                setChartData([]);
+            }
+        }
+        fetchData();
     }, [datasetId]);
 
     useEffect(() => {

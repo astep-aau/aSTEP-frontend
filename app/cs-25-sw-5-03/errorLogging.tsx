@@ -1,5 +1,5 @@
 //const isDevelopment = process.env.NODE_ENV === 'development';
-const isDevelopment = true;
+const isDevelopment = false;
 
 export const log = {
     info: (message: string, data?: object | string | number | boolean) => {

@@ -66,7 +66,7 @@ export default function MyDatasetPage() {
                                 <CardDescription>Manage and analyze your uploaded datasets</CardDescription>
                             </div>
                             <Button asChild>
-                                <Link href="/group9/Upload">
+                                <Link href="/group9/upload">
                                     <Plus className="mr-2 size-4" />
                                     Upload New Dataset
                                 </Link>
@@ -99,17 +99,17 @@ export default function MyDatasetPage() {
                                     <div>
                                         <p className="text-lg font-medium">{dataset.name}</p>
                                         <p className="text-sm text-muted-foreground">
-                                            Start Date: {formatDate(dataset.start_date)} • Entries: {dataset.num_entries}
+                                            Entries: {dataset.num_entries}
                                         </p>
                                     </div>
                                     <div className="flex gap-3">
                                         <Button variant="outline" size="sm" asChild>
-                                            <Link href={`/group9/DetailPage?id=${dataset.id}&name=${encodeURIComponent(dataset.name)}`}>
+                                            <Link href={`/group9/datasets/${dataset.id}`}>
                                                 View Details
                                             </Link>
                                         </Button>
                                         <Button asChild size="sm">
-                                            <Link href={`/group9/Analysis/${dataset.id}?name=${encodeURIComponent(dataset.name)}`}>
+                                            <Link href={`/group9/analysis/${dataset.id}`}>
                                                 Run Analysis
                                             </Link>
                                         </Button>

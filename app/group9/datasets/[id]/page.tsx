@@ -1,11 +1,11 @@
 "use client";
 
-import { useSearchParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { ApiResponse, ChartDataItem } from '../types';
+import { ApiResponse, ChartDataItem } from '../../types';
 import { useEffect, useState } from 'react';
-import TimeSeriesChart from '../TimeSeriesChart';
+import TimeSeriesChart from '../../TimeSeriesChart';
 
 interface DatasetMetadata {
     id: number;
@@ -30,9 +30,7 @@ interface AnomalyRange {
 }
 
 export default function MyDetailPage() {
-const searchParams = useSearchParams();
-const datasetName = searchParams.get('name') || 'Dataset';
-const datasetId = searchParams.get('id') || 'Unknown';
+const { id } = useParams();
 
 const convertApiDataToChartFormat = (apiResponse: ApiResponse): ChartDataItem[] => {
     return apiResponse.items.map((item) => ({
@@ -51,19 +49,10 @@ const [isLoadingAnalyses, setIsLoadingAnalyses] = useState(true);
 const [isLoadingAnomalies, setIsLoadingAnomalies] = useState(false);
     
     useEffect(() => {
-        const fetchData = async () => { 
-        const res = await fetch(`http://127.0.0.1:8000/datasets/${datasetId}/records?size=10000`);
-        const apiData: ApiResponse = await res.json();
-        setChartData(convertApiDataToChartFormat(apiData));
-    }
-    fetchData();
-    }, [datasetId]);
-
-    useEffect(() => {
         const fetchMetadata = async () => {
             try {
                 setIsLoadingMetadata(true);
-                const res = await fetch(`http://127.0.0.1:8000/datasets/${datasetId}`);
+                const res = await fetch(`http://127.0.0.1:8000/datasets/${id}`);
                 const data: DatasetMetadata = await res.json();
                 setMetadata(data);
             } catch (error) {
@@ -73,13 +62,22 @@ const [isLoadingAnomalies, setIsLoadingAnomalies] = useState(false);
             }
         }
         fetchMetadata();
-    }, [datasetId]);
+    }, [id]);
+
+    useEffect(() => {
+        const fetchData = async () => { 
+        const res = await fetch(`http://127.0.0.1:8000/datasets/${id}/records?size=10000`);
+        const apiData: ApiResponse = await res.json();
+        setChartData(convertApiDataToChartFormat(apiData));
+    }
+    fetchData();
+    }, [id]);
 
     useEffect(() => {
         const fetchAnalyses = async () => {
             try {
                 setIsLoadingAnalyses(true);
-                const res = await fetch(`http://127.0.0.1:8000/datasets/${datasetId}/analyses`);
+                const res = await fetch(`http://127.0.0.1:8000/datasets/${id}/analyses`);
                 const data = await res.json();
                 console.log('Fetched analyses data:', data);
                 
@@ -87,7 +85,7 @@ const [isLoadingAnomalies, setIsLoadingAnomalies] = useState(false);
                 setAnalyses(analysesArray);
                 
                 if (analysesArray.length > 0) {
-                    setSelectedAnalysisId(analysesArray[0].id.toString());
+                    setSelectedAnalysisId('');
                 }
             } catch (error) {
                 console.error('Error fetching analyses:', error);
@@ -97,11 +95,14 @@ const [isLoadingAnomalies, setIsLoadingAnomalies] = useState(false);
             }
         }
         fetchAnalyses();
-    }, [datasetId]);
+    }, [id]);
 
     useEffect(() => {
         const fetchAnomalyRanges = async () => {
-            if (!selectedAnalysisId) return;
+            if (!selectedAnalysisId) {
+                setAnomalyRanges([]);
+                return;
+            }
             
             try {
                 setIsLoadingAnomalies(true);
@@ -131,8 +132,8 @@ const [isLoadingAnomalies, setIsLoadingAnomalies] = useState(false);
 return (
     <div className="min-h-screen bg-background">
     <main className="max-w-6xl mx-auto px-6 py-8">
-        <h1 className="text-3xl font-semibold mb-2">Details for {datasetName}</h1>
-        <p className="text-sm text-muted-foreground mb-6">Dataset ID: {datasetId}</p>
+        <h1 className="text-3xl font-semibold mb-2">Details for {metadata?.name}</h1>
+        <p className="text-sm text-muted-foreground mb-6">Dataset ID: {id}</p>
 
         <div className="grid grid-cols-1 gap-6">
           {/* Dataset Visualization Card */}
@@ -157,11 +158,14 @@ return (
                         ) : analyses.length === 0 ? (
                             <option>No analyses available</option>
                         ) : (
-                            analyses.map((analysis) => (
-                                <option key={analysis.id} value={analysis.id}>
-                                    {analysis.name}
-                                </option>
-                            ))
+                            <>
+                                <option value="">Default analysis</option>
+                                {analyses.map((analysis) => (
+                                    <option key={analysis.id} value={analysis.id.toString()}>
+                                        {analysis.name}
+                                    </option>
+                                ))}
+                            </>
                         )}
                     </select>
                 </div>

@@ -1,4 +1,4 @@
-﻿---
+---
 title: Frontend Overview
 description: Frontend documentation
 ---

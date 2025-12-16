@@ -1,6 +1,6 @@
 // API service for the Zig backend route estimation
 
-export const SEQUENCE_LENGTH_OFFSET = 27;
+export const SEQUENCE_LENGTH_OFFSET = 21;
 
 export interface Coordinate {
 	lat: number

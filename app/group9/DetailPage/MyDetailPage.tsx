@@ -53,11 +53,13 @@ const chartTypes = [
     useEffect(() => {
         const fetchData = async () => { 
             try {
-                const res = await fetch(`http://127.0.0.1:8002/datasets/${datasetId}/records?size=10000`);
+                const res = await fetch(`http://127.0.0.1:8001/datasets/${datasetId}/records?size=10000`);
                 if (!res.ok) {
                     throw new Error(`API error: ${res.status} ${res.statusText}`);
                 }
                 const apiData: ApiResponse = await res.json();
+                console.log('ACTUAL API RESPONSE:', JSON.stringify(apiData, null, 2));
+                console.log('Has items?', !!apiData.items);
                 setChartData(convertApiDataToChartFormat(apiData));
             } catch (error) {
                 console.error('Error fetching chart data:', error);
@@ -71,7 +73,7 @@ const chartTypes = [
         const fetchMetadata = async () => {
             try {
                 setIsLoadingMetadata(true);
-                const res = await fetch(`http://127.0.0.1:8002/datasets/${datasetId}`);
+                const res = await fetch(`http://127.0.0.1:8001/datasets/${datasetId}`);
                 const data: DatasetMetadata = await res.json();
                 setMetadata(data);
             } catch (error) {

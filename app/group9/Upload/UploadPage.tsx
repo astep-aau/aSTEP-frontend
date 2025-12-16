@@ -78,12 +78,12 @@ export default function UploadPage() {
       // Read the file as text
       const csvText = await selectedFile.text();
       console.log(
-        `http://127.0.0.1:8002/datasets?name=${encodeURIComponent(datasetName.trim())}&start_date=${new Date().toISOString()}`,
+        `http://127.0.0.1:8001/datasets?name=${encodeURIComponent(datasetName.trim())}&start_date=${new Date().toISOString()}`,
       );
 
       // Send name as query parameter and CSV as raw body
       const response = await fetch(
-        `http://127.0.0.1:8002/datasets?name=${encodeURIComponent(datasetName.trim())}&start_date=${new Date().toISOString()}`,
+        `http://127.0.0.1:8001/datasets?name=${encodeURIComponent(datasetName.trim())}&start_date=${new Date().toISOString()}`,
         {
           method: "POST",
           headers: {

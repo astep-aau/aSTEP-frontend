@@ -1,28 +1,68 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LocationAutocomplete } from "@/components/LocationAutocomplete";
+import { ApiResponse } from '../types';
 
+type DataPoint = { time: string; value: number };
 
 export default function AnalysisPage() {
   const searchParams = useSearchParams();
   const datasetName = searchParams.get('name') || 'Datasets';
+  const datasetId = searchParams.get('id') || 'Unknown';
   const [selectedOption, setSelectedOption] = useState('option1');
   const [datasetLocation, setDatasetLocation] = useState<string>("");
   const [processingType, setProcessingType] = useState("forecast");
+  const [lastDatapoints, setLastDatapoints] = useState<DataPoint[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
   
-  const handleStartAnalysis = () => {
+  useEffect(() => {
+    const fetchLastDatapoints = async () => {
+      try {
+        setLoadingData(true);
+        const res = await fetch(`http://127.0.0.1:8001/datasets/${datasetId}/records?size=10000`);
+        if (!res.ok) {
+          throw new Error(`API error: ${res.status} ${res.statusText}`);
+        }
+        const apiData: ApiResponse = await res.json();
+        
+        console.log('AnalysisPage API Response:', apiData);
+        console.log('Has items?', !!apiData.items);
+        
+        if (apiData.items && Array.isArray(apiData.items)) {
+          setLastDatapoints(apiData.items.slice(-48));
+        } else {
+          console.error('No items array in response');
+          setLastDatapoints([]);
+        }
+      } catch (error) {
+        console.error('Error fetching datapoints:', error);
+        setLastDatapoints([]);
+      } finally {
+        setLoadingData(false);
+      }
+    };
+
+    if (datasetId && datasetId !== 'Unknown') {
+      fetchLastDatapoints();
+    }
+  }, [datasetId]);
+
+  const handleStartAnalysis = async () => {
+    if (!datasetId) {
+      alert("Dataset ID is missing");
+      return;
+    }
     if (!datasetLocation && processingType == "forecast") {
       alert("Forecast needs a location to function");
       return;
     }
 
     console.log('Predicting energy for the next', selectedOption);
-  
-  
+    console.log('Last 24 datapoints:', lastDatapoints);
   };
 
   const handleLocationSelect = (loc: { name: string }) => {
@@ -41,6 +81,7 @@ export default function AnalysisPage() {
     <div className="min-h-screen bg-background">
       <main className="max-w-6xl mx-auto px-6 py-8">
         <h1 className="text-3xl font-semibold mb-2">Analysis for {datasetName}</h1>
+        <p className="text-sm text-muted-foreground mb-6">Dataset ID: {datasetId}</p>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Outlier Detection Card */}
@@ -80,22 +121,6 @@ export default function AnalysisPage() {
                 <div className="flex items-center space-x-3">
                   <input
                     type="radio"
-                    id="15min"
-                    name="Forecasting energy"
-                    value="15min"
-                    checked={selectedOption === '15min'}
-                    onChange={(e) => handleForecastOption(e.target.value)}
-                    className="w-4 h-4"
-                  />
-                  <label htmlFor="15min" className="cursor-pointer font-normal">
-                    15 minutes
-                  </label>
-              </div>
-
-                {/* Option 2 */}
-                <div className="flex items-center space-x-3">
-                  <input
-                    type="radio"
                     id="30min"
                     name="outlier-method"
                     value="30min"
@@ -108,7 +133,7 @@ export default function AnalysisPage() {
                   </label>
                 </div>
 
-                {/* Option 3 */}
+                {/* Option 2 */}
                 <div className="flex items-center space-x-3">
                   <input
                     type="radio"
@@ -123,6 +148,22 @@ export default function AnalysisPage() {
                     1 hour
                   </label>
                 </div>
+
+                {/* Option 3 */}
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="radio"
+                    id="60min"
+                    name="outlier-method"
+                    value="12hours"
+                    checked={selectedOption === '12hours'}
+                    onChange={(e) => handleForecastOption(e.target.value)}
+                    className="w-4 h-4"
+                  />
+                  <label htmlFor="12hours" className="cursor-pointer font-normal">
+                    12 hours
+                  </label>
+                </div>
               </div>
               
               <div>
@@ -130,8 +171,8 @@ export default function AnalysisPage() {
               </div>
 
               {/* Start Button */}
-              <Button onClick={handleStartAnalysis} className="w-full">
-                Start Forecasting
+              <Button onClick={handleStartAnalysis} className="w-full" disabled={loadingData}>
+                {loadingData ? 'Loading data...' : 'Start Forecasting'}
               </Button>
             </CardContent>
           </Card>

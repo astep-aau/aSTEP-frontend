@@ -33,7 +33,7 @@ export default function MyDatasetPage() {
   const fetchDatasets = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("http://127.0.0.1:8002/datasets");
+      const response = await fetch("http://127.0.0.1:8001/datasets");
 
       if (!response.ok) {
         throw new Error(`Failed to fetch datasets: ${response.statusText}`);
@@ -123,7 +123,7 @@ export default function MyDatasetPage() {
                       </Button>
                       <Button asChild size="sm">
                         <Link
-                          href={`/group9/Analysis/${dataset.id}?name=${encodeURIComponent(dataset.name)}`}
+                          href={`/group9/Analysis?id=${dataset.id}&name=${encodeURIComponent(dataset.name)}`}
                         >
                           Run Analysis
                         </Link>

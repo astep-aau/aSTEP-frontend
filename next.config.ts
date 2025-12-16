@@ -16,13 +16,13 @@ const nextConfig: NextConfig = {
         permanent: false,
       },
       {
-        source: '/group-2',
-        destination: '/docs/group-2/',
+        source: '/time-series',
+        destination: '/docs/time-series/',
         permanent: false,
       },
       {
-        source: '/group-2/:path*',
-        destination: '/docs/group-2/:path*',
+        source: '/time-series/:path*',
+        destination: '/docs/time-series/:path*',
         permanent: false,
       },
       {
@@ -43,16 +43,6 @@ const nextConfig: NextConfig = {
       {
         source: '/group-6/:path*',
         destination: '/docs/group-6/:path*',
-        permanent: false,
-      },
-      {
-        source: '/group-9',
-        destination: '/docs/group-9/',
-        permanent: false,
-      },
-      {
-        source: '/group-9/:path*',
-        destination: '/docs/group-9/:path*',
         permanent: false,
       },
       {

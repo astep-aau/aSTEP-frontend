@@ -9,7 +9,7 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'aSTEP Docs',
-      social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/astep-aau/aSTEP-docs' }],
+      social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/astep-aau/aSTEP-frontend' }],
       sidebar: [
         {
           label: 'Cross Group Work',
@@ -20,10 +20,10 @@ export default defineConfig({
           ],
         },
         {
-          label: 'Group 2: Forecasting',
+          label: 'Time-Series: Outlier Detection & Forecasting',
           items: [
-            // Each item here is one entry in the navigation menu.
-            { label: 'Overview', slug: 'group-2' },
+            { label: 'Overview', slug: 'time-series' },
+            { label: 'Setup', slug: 'time-series/setup' },
           ],
         },
         {
@@ -45,13 +45,6 @@ export default defineConfig({
           items: [
             // Each item here is one entry in the navigation menu.
             { label: 'Overview', slug: 'group-6' },
-          ],
-        },
-        {
-          label: 'Group 9: Outlier Detection',
-          items: [
-            // Each item here is one entry in the navigation menu.
-            { label: 'Overview', slug: 'group-9' },
           ],
         },
         {

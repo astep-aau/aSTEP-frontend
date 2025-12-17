@@ -16,16 +16,6 @@ const nextConfig: NextConfig = {
         permanent: false,
       },
       {
-        source: '/time-series',
-        destination: '/docs/time-series/',
-        permanent: false,
-      },
-      {
-        source: '/time-series/:path*',
-        destination: '/docs/time-series/:path*',
-        permanent: false,
-      },
-      {
         source: '/group-3',
         destination: '/docs/group-3/',
         permanent: false,

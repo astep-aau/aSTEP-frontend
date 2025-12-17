@@ -1,23 +1,84 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 export default function AnalysisPage() {
   const { id } = useParams();
-  const [selectedOption, setSelectedOption] = useState('option1');
+  const router = useRouter();
+  const [selectedOption, setSelectedOption] = useState('');
   const [datasetName, setDatasetName] = useState<string>('');
-  const handleStartAnalysis = () => {
-    console.log('Starting outlier detection with:', selectedOption);
+  const [analysisId, setAnalysisId] = useState<string>('');
+  const [analysisName, setAnalysisName] = useState<string>('');
+  const [analysisDescription, setAnalysisDescription] = useState<string>('');
+  const [sequenceLength, setSequenceLength] = useState<number>(32);
+  const [stride, setStride] = useState<number>(1);
+  const [batchSize, setBatchSize] = useState<number>(32);
+  const [epochs, setEpochs] = useState<number>(100);
+  const [learningRate, setLearningRate] = useState<number>(0.001);
+  const [logInterval, setLogInterval] = useState<number>(10);
+  const [testSize, setTestSize] = useState<number>(0.2);
+  const [shuffle, setShuffle] = useState<boolean>(true);
+  const [normalize, setNormalize] = useState<boolean>(true);
+  const [seed, setSeed] = useState<string>('');
+  const handleStartAnalysis = async () => {
+    setNameError('');
+    setOptionError('');
+    if (!analysisName.trim()) {
+      setNameError('Name is required');
+      return;
+    }
+    if (!selectedOption) {  
+      setOptionError('Please select a detection method');
+      return;
+    }
+
+    try {
+      const params = new URLSearchParams({
+        name: analysisName,
+        description: analysisDescription || '',
+        detection_method: selectedOption,
+      });
+      
+      params.set('sequence_length', String(sequenceLength));
+      params.set('stride', String(stride));
+      params.set('batch_size', String(batchSize));
+      params.set('epochs', String(epochs));
+      params.set('learning_rate', String(learningRate));
+      params.set('log_interval', String(logInterval));
+      params.set('test_size', String(testSize));
+      params.set('shuffle', String(shuffle));
+      params.set('normalize', String(normalize));
+      if (seed) params.set('seed', seed);
+
+      const res = await fetch(`http://127.0.0.1:8000/analyses/${id}/analyses?${params.toString()}`, {
+        method: 'POST',
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Failed to create analysis: ${res.status} ${text}`);
+      }
+
+      router.push(`/group9/datasets`);
+
+    } catch (err) {
+      console.error('Error starting analysis:', err);
+    }
   };
+
+  const [nameError, setNameError] = useState<string>('');
+  const [optionError, setOptionError] = useState<string>('');
 
   useEffect(() => {
     const response = async () => {
       const res = await fetch(`http://127.0.0.1:8000/datasets/${id}`);
       const data = await res.json();
       setDatasetName(data.name);
+      // Prefill the analysis id from the route and keep it disabled
+      setAnalysisId(id || '');
     };
     response();
   }, [id]);
@@ -27,82 +88,121 @@ export default function AnalysisPage() {
       <main className="max-w-6xl mx-auto px-6 py-8">
         <h1 className="text-3xl font-semibold mb-2">Analysis for {datasetName}</h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="flex gap-6">
+          <div className="w-2/3">
           {/* Outlier Detection Card */}
           <Card>
-            <CardHeader>
-              <CardTitle>Outlier Detection</CardTitle>
-              <CardDescription>Select a detection method</CardDescription>
-            </CardHeader>
             <CardContent className="space-y-6">
+            <CardTitle>Outlier Detection</CardTitle>
+              {/* Analysis metadata inputs (stacked rows) */}
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label className="text-sm text-muted-foreground block">Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={analysisName}
+                    onChange={(e) => setAnalysisName(e.target.value)}
+                    placeholder="Analysis name"
+                    className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm mt-1"
+                  />
+                  {nameError && <p className="text-sm text-destructive mt-1">{nameError}</p>}
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground block">Description</label>
+                  <input
+                    type="text"
+                    value={analysisDescription}
+                    onChange={(e) => setAnalysisDescription(e.target.value)}
+                    placeholder="Description"
+                    className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm mt-1"
+                  />
+                </div>
+              </div>
               <div className="space-y-3">
+                <CardDescription>Select a detection method</CardDescription>
                 {/* Option 1 */}
                 <div className="flex items-center space-x-3">
                   <input
                     type="radio"
-                    id="option1"
+                    id="LSTM-AutoEncoder"
                     name="outlier-method"
-                    value="option1"
-                    checked={selectedOption === 'option1'}
+                    value="LSTM"
+                    required
+                    checked={selectedOption === 'LSTM'}
                     onChange={(e) => setSelectedOption(e.target.value)}
                     className="w-4 h-4"
                   />
-                  <label htmlFor="option1" className="cursor-pointer font-normal">
-                    Option 1
+                  <label htmlFor="LSTM-AutoEncoder" className="cursor-pointer font-normal">
+                    LSTM AutoEncoder
                   </label>
                 </div>
-
-                {/* Option 2 */}
-                <div className="flex items-center space-x-3">
-                  <input
-                    type="radio"
-                    id="option2"
-                    name="outlier-method"
-                    value="option2"
-                    checked={selectedOption === 'option2'}
-                    onChange={(e) => setSelectedOption(e.target.value)}
-                    className="w-4 h-4"
-                  />
-                  <label htmlFor="option2" className="cursor-pointer font-normal">
-                    Option 2
-                  </label>
-                </div>
-
-                {/* Option 3 */}
-                <div className="flex items-center space-x-3">
-                  <input
-                    type="radio"
-                    id="option3"
-                    name="outlier-method"
-                    value="option3"
-                    checked={selectedOption === 'option3'}
-                    onChange={(e) => setSelectedOption(e.target.value)}
-                    className="w-4 h-4"
-                  />
-                  <label htmlFor="option3" className="cursor-pointer font-normal">
-                    Option 3
-                  </label>
-                </div>
+                {optionError && <p className="text-sm text-destructive mt-1">{optionError}</p>}
               </div>
-
               {/* Start Button */}
               <Button onClick={handleStartAnalysis} className="w-full">
                 Start Outlier Detection
               </Button>
             </CardContent>
           </Card>
+          </div>
 
-          {/* Right Panel - Results/Visualization Area */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Results</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-96 flex items-center justify-center text-muted-foreground">
-                Results will appear here
-              </div>
-            </CardContent>
-          </Card>
+          {/* Model Options Card (right) */}
+          <div className="w-1/3">
+            <Card>
+              <CardHeader>
+                <CardTitle>Model Options (optional)</CardTitle>
+                <CardDescription>These will be sent as query params</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-sm text-muted-foreground block">Sequence Length</label>
+                    <input type="number" min={1} value={sequenceLength} onChange={(e) => setSequenceLength(parseInt(e.target.value || '0'))} className="w-full px-2 py-1 border rounded mt-1" />
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground block">Stride</label>
+                    <input type="number" min={1} value={stride} onChange={(e) => setStride(parseInt(e.target.value || '0'))} className="w-full px-2 py-1 border rounded mt-1" />
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground block">Batch Size</label>
+                    <input type="number" min={1} value={batchSize} onChange={(e) => setBatchSize(parseInt(e.target.value || '0'))} className="w-full px-2 py-1 border rounded mt-1" />
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground block">Epochs</label>
+                    <input type="number" min={1} value={epochs} onChange={(e) => setEpochs(parseInt(e.target.value || '0'))} className="w-full px-2 py-1 border rounded mt-1" />
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground block">Learning Rate</label>
+                    <input type="number" min={0} max={1} step={0.0001} value={learningRate} onChange={(e) => setLearningRate(parseFloat(e.target.value || '0'))} className="w-full px-2 py-1 border rounded mt-1" />
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground block">Log Interval</label>
+                    <input type="number" min={1} value={logInterval} onChange={(e) => setLogInterval(parseInt(e.target.value || '0'))} className="w-full px-2 py-1 border rounded mt-1" />
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground block">Test Size</label>
+                    <input type="number" min={0} max={1} step={0.01} value={testSize} onChange={(e) => setTestSize(parseFloat(e.target.value || '0'))} className="w-full px-2 py-1 border rounded mt-1" />
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground block">Seed (optional)</label>
+                    <input type="number" min={1} value={seed} onChange={(e) => setSeed(e.target.value)} className="w-full px-2 py-1 border rounded mt-1" />
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-4 mt-2">
+                  <label className="flex items-center space-x-2">
+                    <input type="checkbox" checked={shuffle} onChange={(e) => setShuffle(e.target.checked)} />
+                    <span className="text-sm">Shuffle</span>
+                  </label>
+                  <label className="flex items-center space-x-2">
+                    <input type="checkbox" checked={normalize} onChange={(e) => setNormalize(e.target.checked)} />
+                    <span className="text-sm">Normalize</span>
+                  </label>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </main>
     </div>

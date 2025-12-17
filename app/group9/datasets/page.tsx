@@ -6,14 +6,18 @@ import { Plus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Analysis } from './[id]/page';
 
 // Define the interface for the dataset object from your backend
 interface Dataset {
     id: number;
     name: string;
     num_entries: number;
-    start_date: string | null;
+    analyses: Analysis[];
 }
+
+// Some backends include `status` on analyses; extend the imported `Analysis`
+type AnalysisWithStatus = Analysis & { status?: string };
 
 export default function MyDatasetPage() {
     const [datasets, setDatasets] = useState<Dataset[]>([]);
@@ -97,7 +101,28 @@ export default function MyDatasetPage() {
                             <Card key={dataset.id} className="shadow-none">
                                 <CardContent className="flex items-center justify-between p-4">
                                     <div>
-                                        <p className="text-lg font-medium">{dataset.name}</p>
+                                        {/** show spinner when any analysis is pending or processing */}
+                                        {(() => {
+                                            const hasPending = (dataset.analyses as AnalysisWithStatus[])
+                                                .some(a => a.status === 'pending' || a.status === 'processing');
+                                            return (
+                                                <p className="text-lg font-medium">
+                                                    {dataset.name}
+                                                    {hasPending && (
+                                                        <svg
+                                                            className="animate-spin inline-block ml-2 h-4 w-4 text-primary"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            aria-hidden="true"
+                                                        >
+                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                                                        </svg>
+                                                    )}
+                                                </p>
+                                            );
+                                        })()}
                                         <p className="text-sm text-muted-foreground">
                                             Entries: {dataset.num_entries}
                                         </p>

@@ -17,11 +17,12 @@ interface DatasetMetadata {
     end_datetime: string | null;
 }
 
-interface Analysis {
+export interface Analysis {
     id: number;
+    detection_method: string;
     name: string;
-    dataset_id: number;
-    created_at: string;
+    description: string;
+    status: string;
 }
 
 interface AnomalyRange {
@@ -133,7 +134,7 @@ return (
     <div className="min-h-screen bg-background">
     <main className="max-w-6xl mx-auto px-6 py-8">
         <h1 className="text-3xl font-semibold mb-2">Details for {metadata?.name}</h1>
-
+1
         <div className="grid grid-cols-1 gap-6">
           {/* Dataset Visualization Card */}
         <Card>

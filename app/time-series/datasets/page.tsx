@@ -70,7 +70,7 @@ export default function MyDatasetPage() {
                                 <CardDescription>Manage and analyze your uploaded datasets</CardDescription>
                             </div>
                             <Button asChild>
-                                <Link href="/Time-Series/upload">
+                                <Link href="/time-series/upload">
                                     <Plus className="mr-2 size-4" />
                                     Upload New Dataset
                                 </Link>
@@ -129,12 +129,12 @@ export default function MyDatasetPage() {
                                     </div>
                                     <div className="flex gap-3">
                                         <Button variant="outline" size="sm" asChild>
-                                            <Link href={`/Time-Series/datasets/${dataset.id}`}>
+                                            <Link href={`/time-series/datasets/${dataset.id}`}>
                                                 View Details
                                             </Link>
                                         </Button>
                                         <Button asChild size="sm">
-                                            <Link href={`/Time-Series/analysis/${dataset.id}`}>
+                                            <Link href={`/time-series/analysis/${dataset.id}`}>
                                                 Run Analysis
                                             </Link>
                                         </Button>

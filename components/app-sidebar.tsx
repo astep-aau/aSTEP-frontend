@@ -35,7 +35,7 @@ const items = [
   },
   {
     title: "Time Series",
-    url: "/Time-Series",
+    url: "/time-series",
     icon: Users,
   },
   {

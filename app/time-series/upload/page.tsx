@@ -94,7 +94,7 @@ export default function UploadPage() {
     setSelectedFile(null);
     setDatasetName('');
     setIsUploading(false);
-    router.push('/Time-Series/datasets');
+    router.push('/time-series/datasets');
   } catch (error) {
     console.error('Upload failed:', error);
     alert(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);

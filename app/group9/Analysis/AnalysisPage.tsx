@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LocationAutocomplete } from "@/components/LocationAutocomplete";
@@ -10,6 +10,7 @@ import { ApiResponse } from '../types';
 type DataPoint = { time: string; value: number };
 
 export default function AnalysisPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const datasetName = searchParams.get('name') || 'Datasets';
   const datasetId = searchParams.get('id') || 'Unknown';
@@ -63,6 +64,9 @@ export default function AnalysisPage() {
 
     console.log('Predicting energy for the next', selectedOption);
     console.log('Last 24 datapoints:', lastDatapoints);
+    
+    // Redirect to detail page
+    router.push(`/group9/DetailPage?id=${datasetId}&name=${encodeURIComponent(datasetName)}`);
   };
 
   const handleLocationSelect = (loc: { name: string }) => {

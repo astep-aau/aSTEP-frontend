@@ -8,10 +8,11 @@ import { type AnalysisRequestPayload } from '../../types';
 
 export default function AnalysisPage() {
   const { id } = useParams();
+  const idStr = Array.isArray(id) ? id[0] : id ?? '';
   const router = useRouter();
   const [selectedOption, setSelectedOption] = useState('');
   const [datasetName, setDatasetName] = useState<string>('');
-  const [analysisId, setAnalysisId] = useState<string>('');
+  const [analysisId, setAnalysisId] = useState<number>(0);
   const [analysisName, setAnalysisName] = useState<string>('');
   const [analysisDescription, setAnalysisDescription] = useState<string>('');
   const [sequenceLength, setSequenceLength] = useState<number>(32);
@@ -92,13 +93,13 @@ export default function AnalysisPage() {
 
   useEffect(() => {
     const response = async () => {
-      const res = await fetch(`http://127.0.0.1:8000/datasets/${id}`);
+      const res = await fetch(`http://127.0.0.1:8000/datasets/${idStr}`);
       const data = await res.json();
       setDatasetName(data.name);
-      setAnalysisId(id || '');
+      setAnalysisId(Number(id));
     };
     response();
-  }, [id]);
+  });
   
   return (
     <div className="min-h-screen bg-background">
@@ -187,6 +188,10 @@ export default function AnalysisPage() {
                       <div>
                         <label className="text-sm text-muted-foreground block">Test Size</label>
                         <input type="number" min={0} max={1} step={0.01} value={testSize} onChange={(e) => setTestSize(parseFloat(e.target.value || '0'))} className="w-full px-2 py-1 border rounded mt-1" />
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground block">Seed (optional)</label>
+                        <input type="number" min={1} value={seed} onChange={(e) => setSeed(e.target.value)} className="w-full px-2 py-1 border rounded mt-1" />
                       </div>
                       <div>
                         <label className="text-sm text-muted-foreground block">Shuffle</label>

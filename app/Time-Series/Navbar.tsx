@@ -9,8 +9,8 @@ export default function Navbar() {
     const pathname = usePathname();
     
     const navItems = [
-        { name: 'My Datasets', href: '/group9/datasets' },
-        { name: 'Upload Data', href: '/group9/upload' },
+        { name: 'My Datasets', href: '/Time-Series/datasets' },
+        { name: 'Upload Data', href: '/Time-Series/upload' },
     ];
 
     return (
@@ -19,7 +19,7 @@ export default function Navbar() {
                 <div className="container mx-auto px-6 max-w-6xl">
                     <div className="flex justify-between items-center py-4">
                         <div className="flex items-center space-x-8">
-                            <Link href="/group9"><span className="text-lg font-bold text-foreground">aSTEP Time Series</span></Link>
+                            <Link href="/Time-Series"><span className="text-lg font-bold text-foreground">aSTEP Time Series</span></Link>
                             
                             {/* Navigation Links */}
                             <div className="hidden sm:flex space-x-6">

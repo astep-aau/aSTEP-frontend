@@ -34,8 +34,8 @@ const items = [
     icon: Users,
   },
   {
-    title: "Group 9",
-    url: "/group9",
+    title: "Time Series",
+    url: "/Time-Series",
     icon: Users,
   },
   {

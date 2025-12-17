@@ -1,6 +1,6 @@
 import Navbar from './Navbar';
 
-export default function Group9Layout({
+export default function TimeSeriesLayout({
     children,
 }: {
     children: React.ReactNode;

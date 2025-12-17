@@ -62,7 +62,7 @@ export default function AnalysisPage() {
         throw new Error(`Failed to create analysis: ${res.status} ${text}`);
       }
 
-      router.push(`/group9/datasets`);
+      router.push(`/Time-Series/datasets`);
 
     } catch (err) {
       console.error('Error starting analysis:', err);
@@ -77,7 +77,6 @@ export default function AnalysisPage() {
       const res = await fetch(`http://127.0.0.1:8000/datasets/${id}`);
       const data = await res.json();
       setDatasetName(data.name);
-      // Prefill the analysis id from the route and keep it disabled
       setAnalysisId(id || '');
     };
     response();

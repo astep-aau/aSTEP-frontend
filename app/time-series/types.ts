@@ -15,3 +15,12 @@ export interface AnomalyRange {
   end: string // date string
   label?: string
 }
+
+export interface AnalysisRequestPayload {
+  sequence_length: number
+  stride: number
+  test_size: number
+  shuffle: boolean
+  detection_method: string
+  normalize?: string
+}

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { type AnalysisRequestPayload } from '../../types';
 
 export default function AnalysisPage() {
   const { id } = useParams();
@@ -42,14 +43,14 @@ export default function AnalysisPage() {
         description: analysisDescription,
       });
 
-      const datasetPayload: any = {
+      const datasetPayload: AnalysisRequestPayload = {
         sequence_length: sequenceLength,
         stride: stride,
         test_size: testSize,
         shuffle: shuffle,
         detection_method: selectedOption, 
       };
-      if (normalize != null && normalize !== 'none') {
+      if (normalize != null && normalize !== '') {
         datasetPayload.normalize = normalize;
       }
 

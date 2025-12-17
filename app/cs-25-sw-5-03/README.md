@@ -55,7 +55,7 @@ This application will provide real-time travel time estimation for routes in Har
 
 ## File Structure
 
-app/group3/
+app/cs-25-sw-5-03/
 |-- page.tsx              # Main coordinator component
 |-- inputPanel.tsx        # Form component with inputs
 |-- visualPanel.tsx       # Map container component

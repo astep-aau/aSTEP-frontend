@@ -4,10 +4,12 @@ description: Frontend documentation
 ---
 
 ## Purpose
-The purpose of the frontend is to provide an intuitive user interface for travel time estimation in Harbin, China. The application allows users to input origin and destination coordinates, select a departure time, choose a model version, and receive estimated travel time and distance along with a visual route on an interactive map. The frontend serves as the primary interaction point between users and the backend route estimation services, handling input validation, API communication, real-time feedback, and data visualization.
+The purpose of the shared trajectory group frontend is to provide a baseline for the frontend that will be developed by each individual group. It was developed by group 3 but mutually agreed upon. Each individual group will have their own frontend implementation developed based on this, including their own backend communication logic.
+
+The shared frontend provides an intuitive user interface for travel time estimation in Harbin, China. The application allows users to input origin and destination coordinates, select a departure time, choose a model version, and view estimated travel time and distance along with a visual route on an interactive map. The frontend handles input validation, real-time feedback, and data visualization as a baseline that each group can extend.
 
 ## Explanation
-The Group 3 frontend is built with Next.js 14, React, TypeScript, and Leaflet for map visualization. It follows a component-based architecture where the main page component (`page.tsx`) orchestrates state management and business logic, while specialized child components handle specific concerns like input forms, map visualization, and results display. The application implements asynchronous communication with the backend translator service using a correlation ID pattern for request tracking.
+The frontend is built with Next.js 14, React, TypeScript, and Leaflet for map visualization. It follows a component-based architecture where the main page component (`page.tsx`) orchestrates state management and business logic, while specialized child components handle specific concerns like input forms, map visualization, and results display.
 
 ## Architecture Overview
 The frontend consists of the following key components:
@@ -24,11 +26,8 @@ The frontend consists of the following key components:
 
 1. **User Input**: User enters coordinates, time, and model version in the InputPanel
 2. **Validation**: Frontend validates inputs (format, required fields)
-3. **Request Creation**: Generate unique correlationId and create request payload
-4. **POST Request**: Send process creation request to `/api/processes`
-5. **Polling**: Poll `/api/route?correlationId={id}` every 10 seconds (max 60 seconds)
-6. **Response Processing**: Parse route data, calculate time components, update state
-7. **Visualization**: Display results and render route on map
+3. **Backend Communication**: Each group implements their own backend communication logic
+4. **Visualization**: Display results and render route on map
 
 ## State Management
 
@@ -62,7 +61,7 @@ const [routeData, setRouteData] = useState<[number, number][] | undefined>(undef
 const [activeMapPicker, setActiveMapPicker] = useState<'origin' | 'destination' | null>(null);
 ```
 
-## Workflow: User Input and Validation
+## Workflow: User Input
 
 ### Input Handling
 - The InputPanel component provides input fields for origin, destination, time of travel, and model version selection
@@ -111,7 +110,7 @@ const handleMapClick = (lat: number, lon: number) => {
 
 ## Workflow: Validation
 
-Before sending data to the backend, the frontend performs comprehensive validation:
+The frontend performs comprehensive validation on user inputs:
 
 ### Required Field Validation
 ```typescript
@@ -139,7 +138,7 @@ if (timeOfTravel && !timePattern.test(timeOfTravel)) {
 ### Error Display
 - If validation errors exist, they are stored in state and displayed in the Display component
 - Each error is shown with red text and appropriate field-specific messaging
-- The function returns early without making API calls
+- The onSubmit function returns early if validation fails
 
 ## Component Details
 
@@ -147,7 +146,6 @@ if (timeOfTravel && !timePattern.test(timeOfTravel)) {
 **Responsibilities**:
 - State management for entire application
 - Coordinate parsing and validation
-- Backend API communication
 - Business logic orchestration
 - Map click handling
 
@@ -155,9 +153,7 @@ if (timeOfTravel && !timePattern.test(timeOfTravel)) {
 - `parseCoordinate()`: Validates and parses coordinate strings
 - `handleOriginChange()` / `handleDestinationChange()`: Update input and parsed coordinate state
 - `handleMapClick()`: Processes map clicks for coordinate selection
-- `sendDataToBackend()`: Sends POST request to create process
-- `receiveDataFromBackend()`: Polls GET endpoint for route data
-- `handleCalculate()`: Main calculation handler with validation and API orchestration
+- `handleCalculate()`: Main calculation handler with validation (each group extends with their own backend communication)
 
 ### inputPanel.tsx - User Input Form
 **Responsibilities**:
@@ -267,65 +263,7 @@ function MapBoundsUpdater({ origin, destination }: { origin?: ParsedCoordinate, 
 - Customizable via className prop
 - Disabled state support
 
-## User Experience Features
-
-### Loading States
-- **Display Loading**: Shows "Calculating time..." spinner in results section
-- **Map Route Loading**: Shows "Drawing Route..." overlay on map
-- **Independent States**: Distance can be shown while time is still loading
-
-### Visual Feedback
-- **Active Map Picker**: Crosshair cursor and dashed border indicate active selection mode
-- **Error Highlighting**: Red borders on invalid input fields
-- **Loading Overlays**: Blur effects with spinners during processing
-- **Marker Colors**: Green (origin) and Red (destination) for clear distinction
-
-### Input Convenience
-- **Map Click-to-Select**: Click map instead of typing coordinates
-- **Auto-Format**: Coordinates formatted to 6 decimal places
-- **Input Sanitization**: Prevents invalid characters automatically
-- **Copy-Paste Support**: Sanitizes pasted content
-
-### Responsive Design
-- Grid layout: 1.2fr (input panel) to 2fr (map panel) on large screens
-- Single column on mobile devices
-- Scrollable panels when content overflows
-- Min/max height constraints for optimal viewing
-
-## Technology Stack
-
-- **Framework**: Next.js 14 (App Router)
-- **Language**: TypeScript
-- **UI Library**: React 18
-- **Styling**: Tailwind CSS
-- **Map Library**: Leaflet with react-leaflet
-- **UI Components**: Custom components with shadcn/ui patterns
-- **Icons**: Lucide React
-- **State Management**: React useState hooks
-- **API Communication**: Fetch API with async/await
-
-## API Endpoints Used
-
-| Endpoint | Method | Purpose | Request Data | Response Data |
-|----------|--------|---------|--------------|---------------|
-| `/api/processes` | POST | Create new route estimation process | Origin, Destination, TimeOfTravel, ModelVersion, CorrelationId | Status code 200 (success) |
-| `/api/route` | GET | Retrieve calculated route by correlationId | Query param: correlationId | RouteResult with path, distance, and time |
-| `/api/logs/frontend` | POST | Log frontend errors (production only) | Message, URL, error details | Status code 200 (success) |
-
 ## Configuration
-
-### Backend URL Configuration
-Currently hardcoded in `page.tsx`:
-```typescript
-const backendUrlPost = "http://localhost:5000/api/processes";
-const backendUrlGet = `http://localhost:5000/api/route?correlationId=${correlationId}`;
-```
-
-### Model Versions
-Defined in `page.tsx`:
-```typescript
-const modelVersions = ["LSTM 1.01", "LSTM 1.1", "LSTM 2.0 (Experimental)"];
-```
 
 ### Map Configuration
 Defined in `map3.tsx`:
@@ -337,16 +275,3 @@ zoom = 10
 // Tile Layer: OpenStreetMap
 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
 ```
-
-## Future Improvements
-
-- Environment variable configuration for backend URLs
-- Database integration for model version management
-- WebSocket support for real-time updates (eliminate polling)
-- Persistent state with localStorage or session storage
-- Address search/geocoding integration
-- Route history and favorites
-- Multi-language support
-- Accessibility enhancements (ARIA labels, keyboard navigation)
-- Unit and integration tests
-- Performance optimization (memoization, code splitting)

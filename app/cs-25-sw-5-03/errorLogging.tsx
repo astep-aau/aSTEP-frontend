@@ -1,4 +1,5 @@
-const isDevelopment = process.env.NODE_ENV === 'development';
+//const isDevelopment = process.env.NODE_ENV === 'development';
+const isDevelopment = false;
 
 export const log = {
     info: (message: string, data?: object | string | number | boolean) => {
@@ -10,7 +11,7 @@ export const log = {
         if (isDevelopment) {
             console.error(`ERROR: ${message}`, error);
         }
-
+/*        
         if (!isDevelopment) {
             try {
                 const errorDetails = error instanceof Error ? {
@@ -36,5 +37,6 @@ export const log = {
                 console.error("Failed to log error to backend:", logError);
             }
         }
+*/        
     }
 }

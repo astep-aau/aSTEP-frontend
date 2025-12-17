@@ -14,10 +14,9 @@ aSTEP-frontend/
 │   │       └── docs/       # Documentation content (MDX files)
 │   │           ├── index.mdx      # Main docs landing page
 │   │           ├── cross-group/   # Cross-group collaboration docs
-│   │           ├── group-2/       # Group 2: Forecasting
+│   │           ├── time-series/   # Time-Series: Outlier Detection & Forecasting
 │   │           ├── group-3/       # Group 3: Travel Time Estimation
 │   │           ├── group-6/       # Group 6: Attributes Prediction
-│   │           ├── group-9/       # Group 9: Outlier Detection
 │   │           └── group-11/      # Group 11: Travel Time Estimation
 │   ├── astro.config.mjs    # Astro & sidebar configuration
 │   └── package.json        # Docs dependencies
@@ -122,7 +121,7 @@ The `slug` should match your file path relative to `docs/src/content/docs/` (wit
 All documentation links are automatically scoped to the `/docs` path. When you click links in the documentation:
 
 - `/cross-group/` → redirects to `/docs/cross-group/`
-- `/group-2/` → redirects to `/docs/group-2/`
+- `/group-3/` → redirects to `/docs/group-3/`
 - Links within docs work seamlessly
 
 ## Deployment Architecture (Coming Soon)
@@ -133,15 +132,14 @@ Group 11 is currently working on Kubernetes setup for the project:
 architecture-beta
     group ks(cloud)[Kubernetes]
     group tte(cloud)[TTE] in ks
-    group ot(cloud)[OT] in ks
+    group ts(cloud)[TS] in ks
     service nextjs(server)[NextJS Server] in ks
     service group11service(server)[REST service Group 11] in tte
-    service group2service(server)[REST service Group 2] in ot
+    service tsservice(server)[REST service Time Series] in ts
     service group3service(server)[REST service Group 3] in tte
     service group6service(server)[REST service Group 6] in tte
-    service group9service(server)[REST service Group 9] in ot
     service ttedatabase(database)[TTE Database] in tte
-    service otherdatabase(database)[Other Database] in ot
+    service tsdatabase(database)[TS Database] in ts
 
     group3service:L -- R:ttedatabase
     group6service:L -- R:ttedatabase
@@ -151,11 +149,8 @@ architecture-beta
     group6service:L -- R:nextjs
     group11service:L -- R:nextjs
 
-    group2service:R-- L:otherdatabase
-    group9service:R -- L:otherdatabase
-
-    group2service:R-- L:nextjs
-    group9service:R -- L:nextjs
+    tsservice:R -- L:tsdatabase
+    tsservice:R -- L:nextjs
 ```
 
 ## 📚 Learn More

@@ -1,0 +1,29 @@
+/* Dark mode styles for Leaflet controls */
+.darkMap :global(.leaflet-control-zoom a) {
+  background-color: #1f2937;
+  color: #e5e7eb;
+  border-color: #374151;
+}
+
+.darkMap :global(.leaflet-control-zoom a:hover) {
+  background-color: #374151;
+  color: #f9fafb;
+}
+
+.darkMap :global(.leaflet-control-attribution) {
+  background-color: rgba(31, 41, 55, 0.8);
+  color: #9ca3af;
+}
+
+.darkMap :global(.leaflet-control-attribution a) {
+  color: #60a5fa;
+}
+
+/* Marker placement cursor styles */
+.startMarkerCursor :global(.leaflet-container) {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="%2316a34a"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>') 8 14, crosshair !important;
+}
+
+.endMarkerCursor :global(.leaflet-container) {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="%23dc2626"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>') 8 14, crosshair !important;
+}

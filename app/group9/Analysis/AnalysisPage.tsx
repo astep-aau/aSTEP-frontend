@@ -84,7 +84,7 @@ export default function AnalysisPage() {
   const handleAnalysis = async (userData: DataPoint[]) =>{
     const values = userData.map(dp => dp.value);
     try{ 
-      const url = `http://127.0.0.1:8002/forecast/${datasetId}?model_name=lstm&city=${datasetLocation}`;
+      const url = `http://127.0.0.1:8002/forecasting/${datasetId}?model_name=lstm&city=${datasetLocation}`;
       console.log('Forecast URL:', url);
       const res = await fetch(url,{
         method: "POST",

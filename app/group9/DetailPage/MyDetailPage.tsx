@@ -41,6 +41,7 @@ const [chartData, setChartData] = useState<ChartDataItem[]>([]);
 const [metadata, setMetadata] = useState<DatasetMetadata | null>(null);
 const [isLoadingMetadata, setIsLoadingMetadata] = useState(true);
 const [selectedChartType, setSelectedChartType] = useState('time-series');
+const [predictionFetched, setPredictionFetched] = useState(false);
 
 const chartTypes = [
     { value: 'time-series', label: 'Time Series' },
@@ -53,7 +54,7 @@ const chartTypes = [
     useEffect(() => {
         const fetchData = async () => { 
             try {
-                const res = await fetch(`http://127.0.0.1:8000/datasets/${datasetId}/records?size=10000`);
+                const res = await fetch(`http://127.0.0.1:8000/datasets/${datasetId}/records?size=24`);
                 if (!res.ok) {
                     throw new Error(`API error: ${res.status} ${res.statusText}`);
                 }
@@ -68,6 +69,76 @@ const chartTypes = [
         fetchData();
     }, [datasetId]);
 
+    useEffect(() =>{
+        const fetchPrediction = async () => {
+            try {
+                const res = await fetch(`http://127.0.0.1:8002/forecasting/${datasetId}`);
+                if(!res.ok){
+                    throw new Error(`Prediction API error: ${res.status}`);
+                }
+                const predictionData = await res.json();
+                console.log('Prediction API response:', predictionData);
+                console.log('Is predictionData an array?', Array.isArray(predictionData));
+                console.log('predictionData[0]:', predictionData?.[0]);
+
+                // predictionData is an array, each item has a 'predictions' property
+                if (Array.isArray(predictionData) && predictionData[0]?.predictions) {
+                    const allPredictions: ChartDataItem[] = [];
+                    
+                    // Get the latest date from existing chart data
+                    let latestDate: Date | null = null;
+                    if (chartData.length > 0) {
+                        const lastDataPoint = chartData[chartData.length - 1];
+                        latestDate = new Date(lastDataPoint.date);
+                    }
+                    
+                    predictionData.forEach((item: Record<string, unknown>) => {
+                        if (Array.isArray(item.predictions)) {
+                            const formattedData = item.predictions.map((pred: Record<string, unknown>, index: number) => {
+                                // Calculate date at 30-minute intervals from the latest date
+                                let predDate = '';
+                                if (latestDate) {
+                                    const newDate = new Date(latestDate);
+                                    newDate.setMinutes(newDate.getMinutes() + (index + 1) * 30);
+                                    predDate = newDate.toISOString();
+                                } else {
+                                    predDate = String(pred.time || pred.date || pred.timestamp || '');
+                                }
+                                
+                                return {
+                                    date: predDate,
+                                    value: Number(pred.value || pred.prediction || pred.forecast || 0)
+                                };
+                            });
+                            allPredictions.push(...formattedData);
+                        }
+                    });
+                    console.log('Formatted prediction data:', allPredictions);
+                    setChartData(prev => [...prev, ...allPredictions]);
+                }
+                else if (Array.isArray(predictionData)) {
+                    const formattedData: ChartDataItem[] = predictionData.map((item: Record<string, unknown>) => ({
+                        date: String(item.time || item.date || item.timestamp || ''),
+                        value: Number(item.value || item.prediction || item.forecast || 0)
+                    }));
+                    console.log('Formatted prediction data:', formattedData);
+                    setChartData(prev => [...prev, ...formattedData]);
+                }
+                else {
+                    console.warn('Invalid prediction response structure:', predictionData);
+                }
+                setPredictionFetched(true);
+            } catch (error) {
+                console.error('Error fetching prediction:', error);
+                setPredictionFetched(true);
+            }
+        }
+
+        if(chartData.length > 0 && !predictionFetched) {
+            fetchPrediction();
+        }
+    }, [datasetId, chartData.length, predictionFetched])
+
     useEffect(() => {
         const fetchMetadata = async () => {
             try {
@@ -81,6 +152,7 @@ const chartTypes = [
                 setIsLoadingMetadata(false);
             }
         }
+        setPredictionFetched(false);
         fetchMetadata();
     }, [datasetId]);
 
@@ -94,6 +166,7 @@ const chartTypes = [
             minute: '2-digit'
         });
     };
+
 return (
     <div className="min-h-screen bg-background">
     <main className="max-w-6xl mx-auto px-6 py-8">

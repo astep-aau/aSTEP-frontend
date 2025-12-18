@@ -10,7 +10,7 @@ export default function AnalysisPage() {
   const { id } = useParams();
   const idStr = Array.isArray(id) ? id[0] : id ?? '';
   const router = useRouter();
-  const [selectedOption, setSelectedOption] = useState('');
+  const [selectedOption, setSelectedOption] = useState('LSTM');
   const [datasetName, setDatasetName] = useState<string>('');
   const [analysisId, setAnalysisId] = useState<number>(0);
   const [analysisName, setAnalysisName] = useState<string>('');
@@ -19,13 +19,14 @@ export default function AnalysisPage() {
   const [stride, setStride] = useState<number>(1);
   const [batchSize, setBatchSize] = useState<number>(32);
   const [hidden_size, setHiddenSize] = useState<number>(32);
-  const [epochs, setEpochs] = useState<number>(100);
+  const [epochs, setEpochs] = useState<number>(30);
   const [learningRate, setLearningRate] = useState<number>(0.001);
   const [internal_size, setInternalSize] = useState<number>(16);
   const [testSize, setTestSize] = useState<number>(0.2);
   const [shuffle, setShuffle] = useState<boolean>(false);
   const [normalize, setNormalize] = useState<string | null>('robust');
   const [seed, setSeed] = useState<string>('');
+  const [threshold, setThreshold] = useState<number>(3.5);
   const handleStartAnalysis = async () => {
     setNameError('');
     setOptionError('');
@@ -55,13 +56,14 @@ export default function AnalysisPage() {
         datasetPayload.normalize = normalize;
       }
 
-      const res = await fetch(`http://127.0.0.1:8000/analyses/${id}/analyses?${params.toString()}`, {
+      const res = await fetch(`http://localhost:8001/analyze/${id}/lstmae?${params.toString()}`, {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
         method: 'POST',
         body: JSON.stringify({
+          threshold: threshold,
           seed: seed ? parseInt(seed) : null,
           dataset: datasetPayload,
           hyperparameters: {
@@ -169,8 +171,7 @@ export default function AnalysisPage() {
           <div className="w-1/3">
             <Card>
               <CardHeader>
-                <CardTitle>Model Options (optional)</CardTitle>
-                <CardDescription>These will be sent as query params</CardDescription>
+                <CardTitle>Model Options</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="space-y-4">
@@ -207,8 +208,9 @@ export default function AnalysisPage() {
                           onChange={(e) => setNormalize(e.target.value || null)}
                           className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring mt-1"
                         >
-                          <option value="robust">robust</option>
-                          <option value="zscore">zscore</option>
+                          <option value="robust">Robust</option>
+                          <option value="robust_extreme">Robust Extreme</option>
+                          <option value="zscore">Z-Score</option>
                           <option value="">None</option>
                         </select>
                       </div>
@@ -243,6 +245,15 @@ export default function AnalysisPage() {
                       <div>
                         <label className="text-sm text-muted-foreground block">Epochs</label>
                         <input type="number" min={1} value={epochs} onChange={(e) => setEpochs(parseInt(e.target.value || '0'))} className="w-full px-2 py-1 border rounded mt-1" />
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium mb-2">Detection</p>
+                    <div className="grid grid-cols-1 gap-2">
+                      <div>
+                        <label className="text-sm text-muted-foreground block">Threshold</label>
+                        <input type="number" min={0} value={threshold} step={0.01} onChange={(e) => setThreshold(parseFloat(e.target.value || '0'))} className="w-full px-2 py-1 border rounded mt-1" />
                       </div>
                     </div>
                   </div>

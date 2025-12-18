@@ -24,7 +24,7 @@ export default function AnalysisPage() {
     const fetchLastDatapoints = async () => {
       try {
         setLoadingData(true);
-        const res = await fetch(`http://127.0.0.1:8001/datasets/${datasetId}/records?size=10000`);
+        const res = await fetch(`http://127.0.0.1:8000/datasets/${datasetId}/records?size=10000`);
         if (!res.ok) {
           throw new Error(`API error: ${res.status} ${res.statusText}`);
         }
@@ -64,13 +64,13 @@ export default function AnalysisPage() {
 
     console.log('Predicting energy for the next', selectedOption);
     console.log('Last 24 datapoints:', lastDatapoints);
-    
+    await handleAnalysis(lastDatapoints);
     // Redirect to detail page
     router.push(`/group9/DetailPage?id=${datasetId}&name=${encodeURIComponent(datasetName)}`);
   };
 
   const handleLocationSelect = (loc: { name: string }) => {
-    setDatasetLocation(loc.name);
+    setDatasetLocation(loc.name.substring(0, loc.name.indexOf(',')));
 
     // Example wttr.in usage
     // fetch(`/api/weather?lat=${loc.lat}&lon=${loc.lon}`)
@@ -79,6 +79,29 @@ export default function AnalysisPage() {
   const handleForecastOption = (name: string) => {
     setSelectedOption(name);
     setProcessingType("forecast");
+  }
+
+  const handleAnalysis = async (userData: DataPoint[]) =>{
+    const values = userData.map(dp => dp.value);
+    try{ 
+      const url = `http://127.0.0.1:8002/forecast/${datasetId}?model_name=lstm&city=${datasetLocation}`;
+      console.log('Forecast URL:', url);
+      const res = await fetch(url,{
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(values),
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`API error: ${res.status} ${res.statusText} - ${errText}` );
+      }
+      const data = await res.json();
+      console.log('Analysis response:', data);
+    }catch(error){
+      console.error('Error during analysis:', error);
+    }
   }
 
   return (

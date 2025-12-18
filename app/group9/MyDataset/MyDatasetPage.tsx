@@ -33,8 +33,8 @@ export default function MyDatasetPage() {
   const fetchDatasets = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("http://127.0.0.1:8001/datasets");
-
+      const response = await fetch("http://127.0.0.1:8000/datasets");
+      console.log(response)
       if (!response.ok) {
         throw new Error(`Failed to fetch datasets: ${response.statusText}`);
       }

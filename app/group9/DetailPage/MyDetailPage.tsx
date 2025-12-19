@@ -77,9 +77,6 @@ const chartTypes = [
                     throw new Error(`Prediction API error: ${res.status}`);
                 }
                 const predictionData = await res.json();
-                console.log('Prediction API response:', predictionData);
-                console.log('Is predictionData an array?', Array.isArray(predictionData));
-                console.log('predictionData[0]:', predictionData?.[0]);
 
                 // predictionData is an array, each item has a 'predictions' property
                 if (Array.isArray(predictionData) && predictionData[0]?.predictions) {
@@ -99,7 +96,7 @@ const chartTypes = [
                                 let predDate = '';
                                 if (latestDate) {
                                     const newDate = new Date(latestDate);
-                                    newDate.setMinutes(newDate.getMinutes() + (index + 1) * 30);
+                                    newDate.setHours(newDate.getHours() + (index + 1));
                                     predDate = newDate.toISOString();
                                 } else {
                                     predDate = String(pred.time || pred.date || pred.timestamp || '');
@@ -113,7 +110,6 @@ const chartTypes = [
                             allPredictions.push(...formattedData);
                         }
                     });
-                    console.log('Formatted prediction data:', allPredictions);
                     setChartData(prev => [...prev, ...allPredictions]);
                 }
                 else if (Array.isArray(predictionData)) {
@@ -121,7 +117,6 @@ const chartTypes = [
                         date: String(item.time || item.date || item.timestamp || ''),
                         value: Number(item.value || item.prediction || item.forecast || 0)
                     }));
-                    console.log('Formatted prediction data:', formattedData);
                     setChartData(prev => [...prev, ...formattedData]);
                 }
                 else {

@@ -1,4 +1,4 @@
-import { TimeInterval, Roads } from '../../imputation/imputation.types';
+import { TimeInterval,RoadsResponse, Road } from '../../imputation/imputation.types';
 
 /**
  * @description Defines which time intervals are available for each model. In integrated backend, this would come from database queries
@@ -157,6 +157,32 @@ export function getMockTimeInterval(modelIds?: string | string[]): TimeInterval[
 }
 
 /**
+ * @description Returns a single TimeInterval representing the full available time range
+ * This combines all intervals into one overall range
+ * @returns Single TimeInterval with min start_time and max end_time
+ */
+export function getMockTimeIntervalSingle(): TimeInterval {
+  const allIntervals = Object.values(MODEL_TIME_INTERVALS).flat();
+
+  if (allIntervals.length === 0) {
+    // Fallback to default week
+    return {
+      start_time: Math.floor(new Date('2024-01-15T00:00:00Z').getTime() / 1000),
+      end_time: Math.floor(new Date('2024-01-22T23:45:00Z').getTime() / 1000)
+    };
+  }
+
+  // Find earliest start and latest end across all intervals
+  const startTimes = allIntervals.map(i => i.start_time);
+  const endTimes = allIntervals.map(i => i.end_time);
+
+  return {
+    start_time: Math.min(...startTimes),
+    end_time: Math.max(...endTimes)
+  };
+}
+
+/**
  * @description Returns available road segments for selected model(s) and time interval
  *
  * @param modelIds - Single model ID or array of model IDs
@@ -177,11 +203,29 @@ export function getMockTimeInterval(modelIds?: string | string[]): TimeInterval[
  * // Returns only roads where BOTH models have data: { road_ids: ['E002', 'E003', 'E004'] }
  * ```
  */
-export function getMockRoads(modelIds?: string | string[], timeInterval?: TimeInterval): Roads {
+/**
+ * Map of road IDs to full road objects
+ */
+const ROAD_METADATA: Record<string, Road> = {
+  'E001': { id: 'E001', name: 'Zhongyang Street', road_type: 'main_road' },
+  'E002': { id: 'E002', name: 'Songhua River Bridge', road_type: 'highway' },
+  'E003': { id: 'E003', name: 'Hongqi Street', road_type: 'main_road' },
+  'E004': { id: 'E004', name: 'Dongdazhi Street', road_type: 'secondary_road' },
+  'E005': { id: 'E005', name: 'Haxi Avenue', road_type: 'highway' },
+};
+
+/**
+ * Convert road ID array to Road object array
+ */
+function roadIdsToRoads(roadIds: string[]): Road[] {
+  return roadIds.map(id => ROAD_METADATA[id]).filter(Boolean);
+}
+
+export function getMockRoads(modelIds?: string | string[], timeInterval?: TimeInterval): RoadsResponse {
   // If no parameters, return all roads
   if (!modelIds || !timeInterval) {
     return {
-      road_ids: ['E001', 'E002', 'E003', 'E004', 'E005']
+      roads: roadIdsToRoads(['E001', 'E002', 'E003', 'E004', 'E005'])
     };
   }
 
@@ -197,12 +241,12 @@ export function getMockRoads(modelIds?: string | string[], timeInterval?: TimeIn
   // Return intersection if multiple models
   if (modelIdArray.length > 1) {
     return {
-      road_ids: arrayIntersection(roadArrays)
+      roads: roadIdsToRoads(arrayIntersection(roadArrays))
     };
   }
 
   // Return roads for single model
   return {
-    road_ids: roadArrays[0] || []
+    roads: roadIdsToRoads(roadArrays[0] || [])
   };
 }

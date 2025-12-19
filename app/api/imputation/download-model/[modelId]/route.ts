@@ -8,13 +8,13 @@ export async function GET(
 ){
     try {
         const urlParams = await params;
-        const modelId = urlParams.modelId;
+        const modelId  = urlParams.modelId;
 
         const USE_MOCKS = process.env.USE_MOCKS === 'true';
 
         if (USE_MOCKS) {
             const { getTestModelDownload } = await import(
-                '@/app/group6/__tests__/'
+                '@/app/group6/__tests__/ModelDownload.test'
             );
             const data = getTestModelDownload(modelId);
 
@@ -30,7 +30,7 @@ export async function GET(
 
         const baseurl = process.env.GROUP6_URL || 'http://localhost:8000';
         const response = await fetch(
-            `${baseurl}/download-model/${modelId}/`
+            `${baseurl}/downloadmodel/${modelId}/`
         );
 
         if (!response.ok) {

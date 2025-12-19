@@ -73,13 +73,17 @@ export function getMockImputationResults(
   const intervalSeconds = 15 * 60;
   const numPoints = Math.floor((endTime - startTime) / intervalSeconds) + 1;
 
+  // Model-specific error characteristics
   const modelError = modelId.includes('gat') ? 2.3 : 2.8;
 
+  // Generate realistic missing data patterns (20% missing rate)
   const missingPattern: boolean[] = Array.from({ length: numPoints }, (_, i) => {
+    // Create occasional gaps of 3-8 consecutive missing points
     if (i > 0 && Math.random() < 0.03) {
       const gapLength = Math.floor(Math.random() * 6) + 3;
       return i % gapLength !== 0;
     }
+    // Random 15% missing data rate
     return Math.random() < 0.15;
   });
 
@@ -87,17 +91,25 @@ export function getMockImputationResults(
     road_id: roadId,
     model_id: modelId,
 
+    // Timestamps (UNIX seconds)
     tms: Array.from({ length: numPoints }, (_, i) =>
       startTime + i * intervalSeconds
     ),
 
+    // Observed values (null when data is missing)
     values: Array.from({ length: numPoints }, (_, i) => {
+      if (missingPattern[i]) {
+        return null; // Missing data point
+      }
       const timestamp = startTime + i * intervalSeconds;
-      const isImputed = missingPattern[i];
-
-      return calculateRealisticSpeed(timestamp, roadId, isImputed, modelError);
+      return calculateRealisticSpeed(timestamp, roadId, false, modelError);
     }),
 
-    imputed: missingPattern
+    // Imputed values (model predictions for ALL points, including missing ones)
+    imputed: Array.from({ length: numPoints }, (_, i) => {
+      const timestamp = startTime + i * intervalSeconds;
+      // Model makes predictions with some error
+      return calculateRealisticSpeed(timestamp, roadId, true, modelError);
+    })
   };
 }

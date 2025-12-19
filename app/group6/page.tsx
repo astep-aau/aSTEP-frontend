@@ -1,11 +1,10 @@
 import Image from "next/image";
+import Group6Client from "./components/Group6Client";
 
-export default function Home() {
+export default function Group6Page() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <h1>This is the app/group6/page.tsx file</h1>
-      </main>
+    <div>
+      <Group6Client />
     </div>
   );
 }

@@ -1,4 +1,5 @@
-import { ModelType, ModelMetrics, Hyperparameter, ModelLoss, ImputationResult, TimeInterval, Roads } from './imputation.types';
+import { ModelType, ModelMetrics, ImputationResult, TimeInterval, Road, TimeRange } from './imputation.types';
+
 
 /**
  * @description Fetches the available model types from the API.
@@ -14,52 +15,70 @@ export async function fetchModelTypes(): Promise<ModelType[]> {
 
 /**
  * @description Fetches the model metrics for a given model type from the API.
- * @param {string} modelTypeId - ID of the model type to fetch metrics for
+ * @param {string} modelType - ID of the model type to fetch metrics for
  * @returns Promise<ModelMetrics[]> - Array of ModelMetrics objects
  */
-export async function fetchModelMetrics(modelTypeId: string): Promise<ModelMetrics[]> {
-  const response = await fetch(`/api/imputation/model-metrics/${modelTypeId}/`);
+export async function fetchModelMetrics(
+  modelType: string
+): Promise<ModelMetrics[]> {
+  console.log(`[fetchModelMetrics] Requesting metrics for type: ${modelType}`);
+  const response = await fetch(`/api/imputation/model-metric/${modelType}/`);
+
   if (!response.ok) {
+    console.error(`[fetchModelMetrics] Error: ${response.status} ${response.statusText}`);
     throw new Error(`Error fetching model metrics: ${response.statusText}`);
   }
-  return response.json();
+
+  const data: ModelMetrics[] = await response.json();
+
+  return data;
 }
 
-/**
- * @description Fetches the model losses from the API.
- * @returns Promise<ModelLoss[]> - Array of ModelLoss objects
- */
-export async function fetchModelLosses(): Promise<ModelLoss[]> {
-  const response = await fetch('/api/imputation/model-loss/');
+export async function fetchRoadsByModel(modelId: string): Promise<Road[]> {
+	console.log(`[fetchRoadsByModel] Requesting roads for model: ${modelId}`);
+  const response = await fetch(`/api/imputation/impute-result/roads/${modelId}/`);
+
   if (!response.ok) {
-    throw new Error(`Error fetching model losses: ${response.statusText}`);
+		console.error(`[fetchRoadsByModel] Error: ${response.status} ${response.statusText}`)
+    throw new Error(`Error fetching roads for model ${modelId}: ${response.statusText}`);
   }
-  return response.json();
-}
 
-
-/**
- * @description Fetches the available roads from the API.
- * @returns Promise<Roads> - Roads object containing an array of road IDs
- */
-export async function fetchRoads(): Promise<Roads> {
-  const response = await fetch('/api/imputation/roads/');
-  if (!response.ok) {
-    throw new Error(`Error fetching roads: ${response.statusText}`);
-  }
-  return response.json();
-}
+	const data = await response.json();
+	// API returns { roads: Road[] }, extract the roads array
+	const roads: Road[] = data.roads || data;
+	console.log(`[fetchRoadsByModel] Received ${roads.length} roads for model ${modelId}`);
+  return roads;
+} 
 
 /**
  * @description Fetches the time interval from the API.
  * @returns Promise< TimeInterval > - TimeInterval object containing start and end times
  */
-export async function fetchTimeInterval(): Promise<TimeInterval> {
-  const response = await fetch('/api/imputation/time-interval/');
+export async function fetchTimeInterval(modelId: string, roadId: string): Promise<TimeInterval[]> {
+  console.log(`[fetchTimeInterval] Called with modelId: ${modelId}, roadId: ${roadId}`);
+
+  if (!modelId) {
+    console.error(`[fetchTimeInterval] ERROR: modelId is undefined or null!`);
+    throw new Error('modelId is required');
+  }
+  if (!roadId) {
+    console.error(`[fetchTimeInterval] ERROR: roadId is undefined or null!`);
+    throw new Error('roadId is required');
+  }
+
+  const url = `/api/imputation/impute-result/time-interval/${modelId}/${roadId}/`;
+  console.log(`[fetchTimeInterval] Fetching from: ${url}`);
+
+  const response = await fetch(url);
+
   if (!response.ok) {
+    console.error(`[fetchTimeInterval] Error: ${response.status} ${response.statusText}`);
     throw new Error(`Error fetching time interval: ${response.statusText}`);
   }
-  return response.json();
+	const data = await response.json();
+	const timeInterval: TimeInterval[] = data.TimeInterval || data;
+  console.log(`[fetchTimeInterval] Received ${timeInterval.length} time intervals`);
+	return timeInterval;
 }
 
 /**
@@ -68,7 +87,7 @@ export async function fetchTimeInterval(): Promise<TimeInterval> {
  * @param roadId - Fetches imputation results for this road ID
  * @param startTime - Fetches imputation results starting from this time
  * @param endTime - Fetches imputation results up to this time
- * @returns Promise<ImputationResult[]> - Array of ImputationResult objects
+ * @returns Promise<ImputationResult> - Single ImputationResult object
  */
 export async function fetchImputationResults(
   modelId: string,
@@ -82,19 +101,12 @@ export async function fetchImputationResults(
   if (!response.ok) {
     throw new Error(`Error fetching imputation results: ${response.statusText}`);
   }
-  return response.json();
-}
 
-/**
- * @description Fetches hyperparameters from the API.
- * @returns Promise<Hyperparameter[]> - Array of Hyperparameter objects
- */
-export async function fetchHyperparameters(): Promise<Hyperparameter[]> {
-  const response = await fetch('/api/imputation/impute-result/hyperparameters/');
-  if (!response.ok) {
-    throw new Error(`Error fetching hyperparameters: ${response.statusText}`);
-  }
-  return response.json();
+	const data = await response.json();
+	const imputationResult: ImputationResult[] = data.ImputationResult || data;
+	
+  return imputationResult;
+  
 }
 
 /**
@@ -103,7 +115,7 @@ export async function fetchHyperparameters(): Promise<Hyperparameter[]> {
  * @returns Promise< Blob > - The model file as a Blob
  */
 export async function fetchDownloadModel(modelId: string): Promise<Blob> {
-  const response = await fetch(`api/imputation/impute-result/download_model/${modelId}/`);
+  const response = await fetch(`/api/imputation/download-model/${modelId}/`);
   if (!response.ok) {
     throw new Error(`Error exporting model: ${response.statusText}`);
   }

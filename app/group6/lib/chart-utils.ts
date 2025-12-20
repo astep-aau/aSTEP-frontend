@@ -1,5 +1,4 @@
 import { ImputationResult } from '../services/imputation';
-import { getErrorColor } from './chart.config';
 
 /**
  * Chart data point format for Recharts
@@ -11,101 +10,128 @@ export interface ChartDataPoint {
   imputed: number | null;
   imputed2?: number | null;  // For Mode 2
   imputed3?: number | null;
-  error?: number;            // For Mode 4
   errorColor?: string;
   isMissing: boolean;
 }
 
 /**
- * Transform API response to Recharts format
+ * Transform API response (array of individual data points) to Recharts format
+ *
+ * The backend returns an array where each point has:
+ * - tms: Unix timestamp
+ * - value: speed value (or null)
+ * - imputed: boolean (true = predicted, false = observed)
+ *
+ * We need to group by timestamp and separate observed vs imputed values
  */
 export function transformImputationData(
-  result: ImputationResult,
-  modelId?: string
+  results: ImputationResult[]
 ): ChartDataPoint[] {
-  return result.tms.map((timestamp: number, index: number) => {
-    const observed = result.values[index] ?? null;
-    const imputed = (result.imputed[index] ?? null) as number | null;
-    const error = observed !== null && imputed !== null
-      ? imputed - observed
-      : null;
+  // Group by timestamp
+  const groupedByTime = new Map<number, { observed: number | null; imputed: number | null }>();
 
-    const date = new Date(timestamp * 1000);
+  results.forEach((result) => {
+    const existing = groupedByTime.get(result.tms) || { observed: null, imputed: null };
 
-    return {
-      timestamp: date.toISOString(),
-      timestampFormatted: date.toLocaleString('en-GB', {
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
-      observed,
-      imputed,
-      error: error ?? undefined,
-      errorColor: error !== null ? getErrorColor(error) : undefined,
-      isMissing: observed === null,
-    };
+    if (result.imputed) {
+      // This is an imputed (predicted) value
+      existing.imputed = result.value;
+    } else {
+      // This is an observed (actual) value
+      existing.observed = result.value;
+    }
+
+    groupedByTime.set(result.tms, existing);
   });
+
+  // Convert to ChartDataPoint array
+  return Array.from(groupedByTime.entries())
+    .sort((a, b) => a[0] - b[0]) // Sort by timestamp
+    .map(([timestamp, { observed, imputed }]) => {
+      const date = new Date(timestamp * 1000);
+      const error = observed !== null && imputed !== null
+        ? imputed - observed
+        : null;
+
+      return {
+        timestamp: date.toISOString(),
+        timestampFormatted: date.toLocaleString('en-GB', {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        observed,
+        imputed,
+        isMissing: observed === null,
+      };
+    });
 }
 
 /**
  * Merge multiple model results for comparison
+ * Takes arrays of results from different models and combines them by timestamp
+ *
+ * @param modelResults - Array of result arrays, one per model
+ * @returns ChartDataPoint[] with observed and up to 3 imputed values per timestamp
  */
 export function mergeMultipleModels(
-  results: ImputationResult[]
+  modelResults: ImputationResult[][]
 ): ChartDataPoint[] {
-  if (results.length === 0) return [];
+  if (modelResults.length === 0) return [];
 
-  const baseResult = results[0];
+  // Group all results by timestamp
+  const groupedByTime = new Map<number, {
+    observed: number | null;
+    imputed: number | null;
+    imputed2: number | null;
+    imputed3: number | null;
+  }>();
 
-  return baseResult.tms.map((timestamp: number, index: number) => {
-    const date = new Date(timestamp * 1000);
+  // Process each model's results
+  modelResults.forEach((results, modelIndex) => {
+    results.forEach((result) => {
+      const existing = groupedByTime.get(result.tms) || {
+        observed: null,
+        imputed: null,
+        imputed2: null,
+        imputed3: null,
+      };
 
-    const dataPoint: ChartDataPoint = {
-      timestamp: date.toISOString(),
-      timestampFormatted: date.toLocaleString('en-GB'),
-      observed: baseResult.values[index] ?? null,
-      imputed: (baseResult.imputed[index] ?? null) as number | null,
-      isMissing: baseResult.values[index] === null,
-    };
+      if (result.imputed) {
+        // This is an imputed value - assign to the appropriate model slot
+        if (modelIndex === 0) {
+          existing.imputed = result.value;
+        } else if (modelIndex === 1) {
+          existing.imputed2 = result.value;
+        } else if (modelIndex === 2) {
+          existing.imputed3 = result.value;
+        }
+      } else {
+        // Observed values should be the same across models
+        existing.observed = result.value;
+      }
 
-    // Add additional model predictions
-    if (results[1]) {
-      dataPoint.imputed2 = results[1].imputed[index] ?? null;
-    }
-    if (results[2]) {
-      dataPoint.imputed3 = results[2].imputed[index] ?? null;
-    }
-
-    return dataPoint;
+      groupedByTime.set(result.tms, existing);
+    });
   });
-}
 
-/**
- * Calculate error metrics (MAE, RMSE, R²)
- */
-export function calculateErrorMetrics(data: ChartDataPoint[]) {
-  const validPairs = data.filter(d => d.observed !== null && d.imputed !== null);
+  // Convert to ChartDataPoint array
+  return Array.from(groupedByTime.entries())
+    .sort((a, b) => a[0] - b[0])
+    .map(([timestamp, values]) => {
+      const date = new Date(timestamp * 1000);
 
-  if (validPairs.length === 0) {
-    return { mae: 0, rmse: 0, r2: 0, count: 0 };
-  }
-
-  const errors = validPairs.map(d => Math.abs(d.imputed! - d.observed!));
-  const squaredErrors = validPairs.map(d => Math.pow(d.imputed! - d.observed!, 2));
-
-  const mae = errors.reduce((sum, e) => sum + e, 0) / errors.length;
-  const rmse = Math.sqrt(squaredErrors.reduce((sum, e) => sum + e, 0) / squaredErrors.length);
-
-  // R² calculation
-  const observedValues = validPairs.map(d => d.observed!);
-  const mean = observedValues.reduce((sum, v) => sum + v, 0) / observedValues.length;
-  const ssTot = observedValues.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0);
-  const ssRes = squaredErrors.reduce((sum, e) => sum + e, 0);
-  const r2 = 1 - (ssRes / ssTot);
-
-  return { mae, rmse, r2, count: validPairs.length };
+      return {
+        timestamp: date.toISOString(),
+        timestampFormatted: date.toLocaleString('en-GB'),
+        observed: values.observed,
+        imputed: values.imputed,
+        imputed2: values.imputed2 ?? undefined,
+        imputed3: values.imputed3 ?? undefined,
+        isMissing: values.observed === null,
+      };
+    });
 }
 
 /**

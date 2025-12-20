@@ -20,6 +20,7 @@ import {
 	ModelType,
 	Healthcheck
 } from '../services/imputation';
+import { transformImputationData, mergeMultipleModels, ChartDataPoint } from '../lib/chart-utils';
 
 // Dynamic import for charting component
 const TimeSeriesChart = dynamic(() => import('./TimeSeriesChart'), {
@@ -50,7 +51,7 @@ export default function Group6Client() {
 	const [chartMode, setChartMode] = useState<ChartMode>('single');
 
 	// chart data state
-	const [chartData, setChartData] = useState<any[]>([]);
+	const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
 
 	// ui state
 	const [loading, setLoading] = useState(true);
@@ -152,10 +153,10 @@ export default function Group6Client() {
 				});
 
 				const timeIntervalsArray = await Promise.all(timeIntervalPromises);
-				// Flatten and deduplicate time intervals by start_time
+				// Deduplicate time intervals by start_time
+				// Each promise returns a single TimeInterval object, so timeIntervalsArray is TimeInterval[]
 				const timeIntervalData = Array.from(
 					new Map(timeIntervalsArray
-						.flat()
 						.map(time => [time.start_time, time]))
 						.values()
 				);
@@ -186,27 +187,46 @@ export default function Group6Client() {
 			try {
 				setError(null);
 
+				// Use the Unix timestamps directly from timeIntervals (already in seconds)
+				// Since we deduplicate time intervals, all models have the same range
+				const startTimeUnix = timeIntervals.length > 0 ? timeIntervals[0].start_time : 0;
+				const endTimeUnix = timeIntervals.length > 0 ? timeIntervals[0].end_time : 0;
+
 				// Fetch imputation results for each selected model
 				const imputationResultsPromises: Promise<ImputationResult[]>[] = selectedModelIds.map(modelId =>
 					fetchImputationResults(
 						modelId,
 						roadId,
-						timeRange.start,
-						timeRange.end
+						startTimeUnix,
+						endTimeUnix
 					)
 				);
 
 				const imputationResultsArray = await Promise.allSettled(imputationResultsPromises);
 
-				// Extract successful results and flatten
-				const imputationResultsData = imputationResultsArray
+				// Extract successful results (keep per-model arrays separate)
+				const successfulResults = imputationResultsArray
 					.filter((result): result is PromiseFulfilledResult<ImputationResult[]> =>
 						result.status === 'fulfilled'
 					)
-					.flatMap(result => result.value);
+					.map(result => result.value);
 
-				console.log(`[Group6Client] Loaded ${imputationResultsData.length} imputation results`);
-				setChartData(imputationResultsData);
+				console.log(`[Group6Client] Loaded results from ${successfulResults.length} models`);
+
+				// Transform to chart format based on number of models
+				let transformedData: ChartDataPoint[];
+				if (successfulResults.length === 0) {
+					transformedData = [];
+				} else if (successfulResults.length === 1) {
+					// Single model - use simple transformation
+					transformedData = transformImputationData(successfulResults[0]);
+				} else {
+					// Multiple models - merge for comparison
+					transformedData = mergeMultipleModels(successfulResults);
+				}
+
+				console.log(`[Group6Client] Transformed to ${transformedData.length} chart data points`);
+				setChartData(transformedData);
 
 			} catch (err) {
 				console.error('Failed to load chart data:', err);
@@ -245,6 +265,8 @@ export default function Group6Client() {
 			</div>
 		);
 	}
+
+	
 
 	return (
 		<div className="container mx-auto p-6 space-y-6">
@@ -327,7 +349,7 @@ export default function Group6Client() {
 					const model = modelMetrics.find(m => m.id === modelId);
 					if (!model) return null;
 
-					// Get the human-readable model type name
+					// Get the  model type name
 					const modelTypeName = modelType.find(mt => mt.id === model.model_type)?.name || model.model_type;
 
 					// Extract test metrics (prioritize test over validation)

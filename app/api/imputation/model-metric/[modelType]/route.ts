@@ -1,60 +1,56 @@
-import {
-	NextRequest,
-	NextResponse
-} from 'next/server';
-import { ModelMetrics, ModelType } from '@/app/group6/services/imputation';
+import { NextRequest, NextResponse } from 'next/server';
+import { ModelMetrics } from '@/app/group6/services/imputation';
 
 
 export async function GET(
-_request: NextRequest,
-{ params }: { params: Promise<{ modelType: string}> }
+	_request: NextRequest,
+	{ params }: { params: Promise<{ modelType: string }> }
 ) {
+	const { modelType } = await params;
+	const baseurl = process.env.GROUP6_URL || 'http://localhost:8000';
+	const backendUrl = `${baseurl}/model-metrics/${modelType}/`;
 
-		const { modelType } = await params;
-
-		if (!modelType) {
-			return NextResponse.json(
-				{ error: `Missing required parameter: ${modelType}` },
-				{ status: 400 }
-			);
-		}
-
-		const USE_MOCKS = process.env.USE_MOCKS === 'true';
-
-		if (USE_MOCKS) {
-			const { getMockModelMetrics } = await import(
-				'@/app/group6/services'
-			);
-
-			// Pass modelType parameter to mock function
-			const data = getMockModelMetrics(modelType);
-
-			await new Promise(resolve => setTimeout(resolve, 500));
-
-			if (data) {
-				return NextResponse.json(data);
-			}
-
-			return NextResponse.json(
-				{ error: `Mocked model metrics not found for type: ${modelType}` },
-				{ status: 404 });
-		}
-
-		const baseurl = process.env.GROUP6_URL || 'http://localhost:8000';
-		const response = await fetch(
-			`${baseurl}/model-metrics/${modelType}/`
+	if (!modelType) {
+		return NextResponse.json(
+			{ error: `Missing required parameter: ${modelType}` },
+			{ status: 400 }
 		);
+	}
+
+	console.log(`[Model Metrics API] Fetching from backend: ${backendUrl}`);
+	try {
+		const response = await fetch(backendUrl);
+		console.log(`[Model Metrics API] Backend response status: ${response.status}`);
 
 		if (!response.ok) {
-			console.error(`Backend error: ${response.status} ${response.statusText}`);
+			const errorText = await response.text();
+			console.error(`[Model Metrics API] Backend error: ${response.status} ${errorText}`);
+
 			return NextResponse.json(
-				{ error: `Backend API error: ${response.statusText}` },
+				{
+					error: `Backend API error: ${response.statusText}`,
+					details: errorText,
+					status: response.status,
+					url: backendUrl
+				},
 				{ status: response.status }
 			);
 		}
 
-		const data: ModelMetrics[] = await response.json();
-		console.log('Backend data:', JSON.stringify(data, null, 2));
+		const modelMetrics: ModelMetrics[] = await response.json();
+		console.log('[Model Metrics API] Backend data:', JSON.stringify(modelMetrics, null, 2));
 
-		return NextResponse.json(data);
+		return NextResponse.json(modelMetrics);
+	} catch (error) {
+		console.error(`[Model Metrics API] Fetch error:`, error);
+
+		return NextResponse.json(
+			{
+				error: `Failed to connect to backend`,
+				details: error instanceof Error ? error.message : String(error),
+				url: backendUrl
+			},
+			{ status: 503 }
+		);
 	}
+}

@@ -11,10 +11,6 @@ import {
     Tooltip,
     Legend,
     Brush,
-    Area,
-    AreaChart,
-    ComposedChart,
-    Bar,
 } from 'recharts';
 import { ChartDataPoint } from '../lib/chart-utils';
 import {
@@ -236,83 +232,6 @@ function ConfigurationsChart({ data, modelNames }: { data: ChartDataPoint[], mod
   );
 }
 
-function ErrorChart({ data }: { data: ChartDataPoint[] }) {
-  return (
-    <div className="space-y-4">
-      {/* Main Chart: Observed vs Imputed */}
-      <ResponsiveContainer width="100%" height={CHART_DIMENSIONS.errorChart.mainHeight}>
-        <LineChart data={data} margin={CHART_DIMENSIONS.margin}>
-          <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.grid} />
-          <XAxis dataKey="timestamp" tickFormatter={formatTimestamp} />
-          <YAxis label={{ value: 'Speed (km/h)', angle: -90, position: 'insideLeft' }} />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend />
-
-          <Line
-            type="monotone"
-            dataKey="observed"
-            stroke={CHART_COLORS.observed}
-            name="Observed"
-            {...LINE_STYLES.observed}
-          />
-
-          <Line
-            type="monotone"
-            dataKey="imputed"
-            stroke={CHART_COLORS.imputed}
-            name="Imputed"
-            {...LINE_STYLES.imputed}
-          />
-        </LineChart>
-      </ResponsiveContainer>
-
-      {/* Error Subplot: Color-coded bars */}
-      <ResponsiveContainer width="100%" height={CHART_DIMENSIONS.errorChart.errorHeight}>
-        <ComposedChart data={data} margin={CHART_DIMENSIONS.margin}>
-          <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.grid} />
-          <XAxis dataKey="timestamp" tickFormatter={formatTimestamp} />
-          <YAxis label={{ value: 'Error (km/h)', angle: -90, position: 'insideLeft' }} />
-          <Tooltip
-            content={({ active, payload }) => {
-              if (!active || !payload?.[0]) return null;
-              const error = payload[0].value as number;
-              return (
-                <div className="bg-white dark:bg-gray-800 border rounded-lg p-2">
-                  <p className="text-sm font-semibold">
-                    Error: {formatSpeed(error)}
-                  </p>
-                </div>
-              );
-            }}
-          />
-
-          {/* Color-coded error bars */}
-          <Bar
-            dataKey="error"
-            fill={CHART_COLORS.success}
-            shape={(props: any) => {
-              const { x, y, width, height, payload } = props;
-              const color = payload.errorColor || CHART_COLORS.success;
-              return (
-                <rect
-                  x={x}
-                  y={y}
-                  width={width}
-                  height={height}
-                  fill={color}
-                  opacity={0.8}
-                />
-              );
-            }}
-          />
-
-          <Brush dataKey="timestamp" height={30} />
-        </ComposedChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
-
 /**
  * Main TimeSeriesChart Component
  */
@@ -372,7 +291,6 @@ export default function TimeSeriesChart({
                     <TabsTrigger value="single">Single Model</TabsTrigger>
                     <TabsTrigger value="comparison">Compare Models</TabsTrigger>
                     <TabsTrigger value="configurations">Configurations</TabsTrigger>
-                    <TabsTrigger value="error">Error Analysis</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="single" className="mt-4">
@@ -387,9 +305,6 @@ export default function TimeSeriesChart({
                 <ConfigurationsChart data={chartData} modelNames={modelNames} />
                 </TabsContent>
 
-                <TabsContent value="error" className="mt-4">
-                <ErrorChart data={chartData} />
-                </TabsContent>
             </Tabs>
         </div>
     );

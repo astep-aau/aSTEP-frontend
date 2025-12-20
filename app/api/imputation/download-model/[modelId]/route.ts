@@ -1,49 +1,51 @@
 import {
-    NextResponse 
+	NextResponse
 } from "next/server";
 
 export async function GET(
-    _request: Request,
-    { params }: { params: Promise<{ modelId: string }> }
-){
-    try {
-        const urlParams = await params;
-        const modelId  = urlParams.modelId;
+	_request: Request,
+	{ params }: { params: Promise<{ modelId: string }> }
+) {
+	const { modelId } = await params;
+	const baseurl = process.env.GROUP6_URL || 'http://localhost:8000';
+	const backendUrl = `${baseurl}/downloadmodel/${modelId}/`
 
-        const USE_MOCKS = process.env.USE_MOCKS === 'true';
+	console.log(`[Download Model API] Fetching from backend: ${backendUrl}`)
 
-        if (USE_MOCKS) {
-            const { getTestModelDownload } = await import(
-                '@/app/group6/__tests__/ModelDownload.test'
-            );
-            const data = getTestModelDownload(modelId);
 
-            await new Promise(resolve => setTimeout(resolve, 500)); 
-            
-            if (data) {
-                return NextResponse.json(data);
-            }
-            return NextResponse.json(
-                { error: 'Mocked exported model not found' }, 
-                { status: 501 });
-        } 
+	try {
+		const response = await fetch(backendUrl)
+		console.log(`[Download Model API] Backend response status: ${response.status}`)
 
-        const baseurl = process.env.GROUP6_URL || 'http://localhost:8000';
-        const response = await fetch(
-            `${baseurl}/downloadmodel/${modelId}/`
-        );
+		if (!response.ok) {
+			const errorText = await response.text();
+			console.log(`[Download Model API] Backend error: ${response.status} ${errorText}`)
 
-        if (!response.ok) {
-            return NextResponse.json(
-                { error: 'Backend Error' }, 
-                { status: 500 });
-        }
-        const data = await response.json();
-        return NextResponse.json(data);
+			return NextResponse.json({
+				error: 'Backend Error',
+				details: errorText,
+				status: response.status,
+				url: backendUrl
+			},
+				{ status: response.status }
+			);
+		}
 
-    } catch (error) {
-        return NextResponse.json(
-            { error: 'Failed to export model' }, 
-            { status: 500 });
-    }
+		const data = await response.json();
+		console.log(`[Download Model API] Backend:`)
+
+		return NextResponse.json(data);
+
+	} catch (error) {
+		console.error(`[Download Model API] Fetch error:`, error);
+
+		return NextResponse.json(
+			{
+				error: 'Failed to connect backend',
+				details: error instanceof Error ? error.message : String(error),
+				url: backendUrl
+			},
+			{ status: 500 }
+		);
+	}
 }

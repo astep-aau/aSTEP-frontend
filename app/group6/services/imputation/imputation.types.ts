@@ -52,18 +52,14 @@ export interface ModelLoss {
 
 
 /**
- *
- * @property {string} road_id - ID of the road
- * @property {string} model_id - ID of the model
- * @property {number[]} tms - Array of timestamps in UNIX seconds
- * @property {(number | null)[]} values - Observed speed values (null when imputed=true)
- * @property {number[]} imputed - Model predictions (copies from value when imputed=true)
+ * Single imputation data point from the backend API
+ * @property {number} tms - Timestamp in UNIX seconds
+ * @property {number | null} value - Speed value (can be null if missing)
+ * @property {boolean} imputed - Whether this data point is imputed (true) or observed (false)
  */
 export interface ImputationResult {
-	model_id: string;
-	road_id: string;
 	tms: number;
-	value: (number | null)[];
+	value: number | null;
 	imputed: boolean;
 }
 
@@ -103,14 +99,6 @@ export interface Road {
 export interface Healthcheck {
 	status: string;
 	service: string;
-}
-
-/**
- * @description Response from roads API endpoint
- * @property {Road[]} roads - Array of road segments
- */
-export interface RoadsResponse {
-	roads: Road[];
 }
 
 /**

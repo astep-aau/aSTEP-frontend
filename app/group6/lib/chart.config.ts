@@ -7,7 +7,6 @@
 
 /**
  * Color scheme for traffic data visualization
- * Following the design specification from CLAUDE.md
  */
 export const CHART_COLORS = {
   // Primary data colors
@@ -19,11 +18,6 @@ export const CHART_COLORS = {
   model1: '#F97316',          // Orange - Primary model
   model2: '#10B981',          // Green - Secondary model
   model3: '#8B5CF6',          // Purple - Tertiary model
-
-  // Performance indicators
-  success: '#10B981',         // Green - Best performance / low error
-  warning: '#FBBF24',         // Yellow - Medium performance
-  error: '#EF4444',           // Red - Worst performance / high error
 
   // UI elements
   grid: '#E5E7EB',            // Light gray for grid lines
@@ -99,15 +93,6 @@ export const AREA_STYLES = {
   },
 } as const;
 
-/**
- * Error thresholds for Mode 4 (Error Visualization)
- * Based on km/h differences between observed and imputed
- */
-export const ERROR_THRESHOLDS = {
-  low: 2,      // < 2 km/h = Green (excellent)
-  medium: 5,   // 2-5 km/h = Yellow (acceptable)
-  high: Infinity, // > 5 km/h = Red (needs improvement)
-} as const;
 
 /**
  * Brush component configuration
@@ -163,21 +148,6 @@ export const RESPONSIVE_BREAKPOINTS = {
   xl: 1280,
 } as const;
 
-/**
- * Get color based on error magnitude
- * Used in Mode 4 for color-coded error bars
- */
-export function getErrorColor(error: number): string {
-  const absError = Math.abs(error);
-
-  if (absError < ERROR_THRESHOLDS.low) {
-    return CHART_COLORS.success;
-  } else if (absError < ERROR_THRESHOLDS.medium) {
-    return CHART_COLORS.warning;
-  } else {
-    return CHART_COLORS.error;
-  }
-}
 
 /**
  * Get model color by index
@@ -190,21 +160,6 @@ export function getModelColor(index: number): string {
     CHART_COLORS.model3,
   ];
   return colors[index % colors.length];
-}
-
-/**
- * Calculate opacity based on performance rank
- * For Mode 3 (Multiple Configurations)
- * Best model = 100% opacity, worst = 30% opacity
- */
-export function getOpacityByRank(rank: number, totalModels: number): number {
-  if (totalModels === 1) return 1;
-
-  // Linear interpolation from 1.0 (best) to 0.3 (worst)
-  const minOpacity = 0.3;
-  const maxOpacity = 1.0;
-
-  return maxOpacity - ((rank - 1) / (totalModels - 1)) * (maxOpacity - minOpacity);
 }
 
 /**

@@ -35,9 +35,9 @@ const items = [
     icon: Users,
   },
   {
-    title: "Group 9",
+    title: "Time Series",
     url: "/group9",
-    icon: Users,
+    icon: Clock,
   },
 ]
 

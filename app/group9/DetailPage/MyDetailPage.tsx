@@ -92,7 +92,6 @@ const chartTypes = [
                     predictionData.forEach((item: Record<string, unknown>) => {
                         if (Array.isArray(item.predictions)) {
                             const formattedData = item.predictions.map((pred: Record<string, unknown>, index: number) => {
-                                // Calculate date at 30-minute intervals from the latest date
                                 let predDate = '';
                                 if (latestDate) {
                                     const newDate = new Date(latestDate);

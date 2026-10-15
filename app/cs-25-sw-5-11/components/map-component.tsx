@@ -1,100 +1,81 @@
 'use client'
 
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet'
-import 'leaflet/dist/leaflet.css'
+import maplibregl from 'maplibre-gl'
+import 'maplibre-gl/dist/maplibre-gl.css'
 import { useState, useEffect, useRef } from 'react'
-import L from 'leaflet'
 import { useTheme } from 'next-themes'
 import styles from './map.module.css'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-delete (L.Icon.Default.prototype as any)._getIconUrl
-L.Icon.Default.mergeOptions({
-	iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-	iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-	shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+const LIGHT_STYLE = 'https://tiles.openfreemap.org/styles/liberty'
+const DARK_STYLE = 'https://tiles.openfreemap.org/styles/dark'
+
+const ROUTE_SOURCE_ID = 'route'
+const ROUTE_LAYER_ID = 'route-line'
+
+const toLngLat = ([lat, lng]: [number, number]): [number, number] => [lng, lat]
+
+const routeToGeoJSON = (route: [number, number][]): GeoJSON.Feature<GeoJSON.LineString> => ({
+	type: 'Feature',
+	properties: {},
+	geometry: {
+		type: 'LineString',
+		coordinates: route.map(toLngLat)
+	}
 })
 
-// Custom icons for start (green) and end (red)
-const startIcon = new L.Icon({
-	iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-	shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-	iconSize: [25, 41],
-	iconAnchor: [12, 41],
-	popupAnchor: [1, -34],
-	shadowSize: [41, 41]
-})
+function addRouteLayer(map: maplibregl.Map, route: [number, number][]) {
+	if (map.getSource(ROUTE_SOURCE_ID)) return
 
-const endIcon = new L.Icon({
-	iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-	shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-	iconSize: [25, 41],
-	iconAnchor: [12, 41],
-	popupAnchor: [1, -34],
-	shadowSize: [41, 41]
-})
-
-interface RouteHandlerProps {
-	markerMode: 'start' | 'end' | null
-	onMarkerSet: (type: 'start' | 'end', position: [number, number]) => void
-	adjustedStartCoord?: [number, number] | null
-	adjustedEndCoord?: [number, number] | null
-	clientStartCoord?: [number, number] | null
-	clientEndCoord?: [number, number] | null
+	map.addSource(ROUTE_SOURCE_ID, {
+		type: 'geojson',
+		data: routeToGeoJSON(route)
+	})
+	map.addLayer({
+		id: ROUTE_LAYER_ID,
+		type: 'line',
+		source: ROUTE_SOURCE_ID,
+		layout: {
+			'line-join': 'round',
+			'line-cap': 'round'
+		},
+		paint: {
+			'line-color': '#0000ff',
+			'line-width': 5,
+			'line-opacity': 0.7
+		}
+	})
 }
 
-function RouteHandler({
-	markerMode,
-	onMarkerSet,
-	adjustedStartCoord,
-	adjustedEndCoord,
-	clientStartCoord,
-	clientEndCoord
-}: RouteHandlerProps) {
-	const map = useMap()
-	const markerModeRef = useRef(markerMode)
-	const onMarkerSetRef = useRef(onMarkerSet)
+function useMarker(
+	mapRef: React.RefObject<maplibregl.Map | null>,
+	mapReady: boolean,
+	coord: [number, number] | null | undefined,
+	color: string
+) {
+	const markerRef = useRef<maplibregl.Marker | null>(null)
 
-	// Keep refs up to date
 	useEffect(() => {
-		markerModeRef.current = markerMode
-		onMarkerSetRef.current = onMarkerSet
-	}, [markerMode, onMarkerSet])
+		const map = mapRef.current
+		if (!map || !mapReady) return
 
-	// Set up click handler with proper cleanup
-	useEffect(() => {
-		const handleClick = (e: L.LeafletMouseEvent) => {
-			if (!markerModeRef.current) return
-
-			const newPoint: [number, number] = [e.latlng.lat, e.latlng.lng]
-			onMarkerSetRef.current(markerModeRef.current, newPoint)
+		if (!coord) {
+			markerRef.current?.remove()
+			markerRef.current = null
+			return
 		}
 
-		// Add event listener
-		map.on('click', handleClick)
+		if (!markerRef.current) {
+			markerRef.current = new maplibregl.Marker({ color })
+		}
+		markerRef.current.setLngLat(toLngLat(coord)).addTo(map)
+	}, [mapRef, mapReady, coord, color])
 
-		// Cleanup function - removes the event listener
+	useEffect(() => {
 		return () => {
-			map.off('click', handleClick)
+			markerRef.current?.remove()
+			markerRef.current = null
 		}
-	}, [map]) // Only re-run if map instance changes
-
-	// Priority: adjusted > client > null
-	const displayStartCoord = adjustedStartCoord || clientStartCoord
-	const displayEndCoord = adjustedEndCoord || clientEndCoord
-
-	return (
-		<>
-			{displayStartCoord && (
-				<Marker position={displayStartCoord} icon={startIcon}>
-				</Marker>
-			)}
-			{displayEndCoord && (
-				<Marker position={displayEndCoord} icon={endIcon}>
-				</Marker>
-			)}
-		</>
-	)
+	}, [])
 }
 
 interface MapComponentProps {
@@ -124,10 +105,76 @@ export function MapComponent({
 }: MapComponentProps) {
 	const { theme, resolvedTheme } = useTheme()
 	const [mounted, setMounted] = useState(false)
+	const [mapReady, setMapReady] = useState(false)
+	const containerRef = useRef<HTMLDivElement>(null)
+	const mapRef = useRef<maplibregl.Map | null>(null)
+	const markerModeRef = useRef(markerMode)
+	const onMarkerSetRef = useRef(onMarkerSet)
+	const routeRef = useRef(route)
 
 	useEffect(() => {
 		setMounted(true)
 	}, [])
+
+	useEffect(() => {
+		markerModeRef.current = markerMode
+		onMarkerSetRef.current = onMarkerSet
+	}, [markerMode, onMarkerSet])
+
+	const currentTheme = mounted ? (resolvedTheme || theme) : 'light'
+	const isDark = currentTheme === 'dark'
+	const styleUrl = isDark ? DARK_STYLE : LIGHT_STYLE
+
+	useEffect(() => {
+		if (!containerRef.current) return
+
+		const map = new maplibregl.Map({
+			container: containerRef.current,
+			style: styleUrl,
+			center: toLngLat(center),
+			zoom,
+			attributionControl: { compact: true }
+		})
+		map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left')
+
+		map.on('style.load', () => {
+			addRouteLayer(map, routeRef.current)
+			setMapReady(true)
+		})
+
+		map.on('click', (e) => {
+			if (!markerModeRef.current) return
+
+			const newPoint: [number, number] = [e.lngLat.lat, e.lngLat.lng]
+			onMarkerSetRef.current(markerModeRef.current, newPoint)
+		})
+
+		mapRef.current = map
+
+		return () => {
+			map.remove()
+			mapRef.current = null
+			setMapReady(false)
+		}
+	}, [])
+
+	useEffect(() => {
+		const map = mapRef.current
+		if (!map || !mapReady) return
+		map.setStyle(styleUrl)
+	}, [styleUrl])
+
+	useEffect(() => {
+		routeRef.current = route
+		const map = mapRef.current
+		if (!map || !mapReady) return
+
+		const source = map.getSource(ROUTE_SOURCE_ID) as maplibregl.GeoJSONSource | undefined
+		source?.setData(routeToGeoJSON(route))
+	}, [route, mapReady])
+
+	useMarker(mapRef, mapReady, adjustedStartCoord || clientStartCoord, '#16a34a')
+	useMarker(mapRef, mapReady, adjustedEndCoord || clientEndCoord, '#dc2626')
 
 	const getCursorClass = () => {
 		if (markerMode === 'start') return styles.startMarkerCursor
@@ -135,46 +182,9 @@ export function MapComponent({
 		return ''
 	}
 
-	// Use resolvedTheme to handle 'system' theme setting
-	const currentTheme = mounted ? (resolvedTheme || theme) : 'light'
-	const isDark = currentTheme === 'dark'
-
 	return (
 		<div className={`${className} ${isDark ? styles.darkMap : ''} ${getCursorClass()}`}>
-			<MapContainer
-				center={center}
-				zoom={zoom}
-				scrollWheelZoom={true}
-				className="h-full w-full rounded-lg"
-			>
-				<TileLayer
-					key={currentTheme}
-					attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-					url={
-						isDark
-							? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
-							: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
-					}
-				/>
-
-				<RouteHandler
-					markerMode={markerMode}
-					onMarkerSet={onMarkerSet}
-					adjustedStartCoord={adjustedStartCoord}
-					adjustedEndCoord={adjustedEndCoord}
-					clientStartCoord={clientStartCoord}
-					clientEndCoord={clientEndCoord}
-				/>
-
-				{route.length > 0 && (
-					<Polyline
-						positions={route}
-						color="blue"
-						weight={5}
-						opacity={0.7}
-					/>
-				)}
-			</MapContainer>
+			<div ref={containerRef} className="h-full w-full rounded-lg overflow-hidden" />
 		</div>
 	)
 }
